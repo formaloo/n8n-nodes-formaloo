@@ -237,6 +237,7 @@ export class FormalooTrigger implements INodeType {
 				try {
 					processedData = JSON.parse(body);
 				} catch (e) {
+					console.log('Error parsing body:', e);
 					// Keep as string if not valid JSON
 				}
 			}
@@ -252,10 +253,13 @@ export class FormalooTrigger implements INodeType {
 				},
 			};
 
+			console.log('webhookData', webhookData)
+
 			return {
 				workflowData: [[{ json: webhookData }]],
 			};
 		} catch (error) {
+			console.log("error happended", error)
 			return {
 				workflowData: [[
 					{
