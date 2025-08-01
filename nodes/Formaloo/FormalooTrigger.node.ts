@@ -228,6 +228,7 @@ export class FormalooTrigger implements INodeType {
 		try {
 			console.log('Webhook receiveddddddddddddddddddddddddddd');
 			const body = this.getRequestObject().body;
+			console.log('bodyyyyyyyyyyyyyy', body)
 
 			// Process the webhook data
 			let processedData = body;
@@ -242,6 +243,8 @@ export class FormalooTrigger implements INodeType {
 				}
 			}
 
+			console.log('processedDataaaaaaa', processedData)
+
 			// Add metadata about the webhook
 			const webhookData = {
 				...processedData,
@@ -253,7 +256,7 @@ export class FormalooTrigger implements INodeType {
 				},
 			};
 
-			console.log('webhookData', webhookData)
+			console.log('webhookDataaaaaaa', webhookData)
 
 			return {
 				workflowData: [[{ json: webhookData }]],
