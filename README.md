@@ -1,48 +1,74 @@
-![Banner image](https://user-images.githubusercontent.com/10284570/173569848-c624317f-42b1-45a6-ab09-f0ea3c247648.png)
+# n8n-nodes-formaloo
 
-# n8n-nodes-starter
+This package provides n8n nodes for integrating with [Formaloo](https://formaloo.com), a form builder platform.
 
-This repo contains example nodes to help you get started building your own custom integrations for [n8n](https://n8n.io). It includes the node linter and other dependencies.
+## Nodes
 
-To make your custom node available to the community, you must create it as an npm package, and [submit it to the npm registry](https://docs.npmjs.com/packages-and-modules/contributing-packages-to-the-registry).
+### Formaloo Trigger
+- **Node Name**: `Formaloo Trigger`
+- **Type**: Trigger
+- **Description**: Triggers workflows when forms are submitted or updated in Formaloo
+- **Events Supported**:
+  - Form Submit
+  - Row Update
+  - Payment Completed
+  - All Events
 
-If you would like your node to be available on n8n cloud you can also [submit your node for verification](https://docs.n8n.io/integrations/creating-nodes/deploy/submit-community-nodes/).
+### Formaloo Action
+- **Node Name**: `Formaloo`
+- **Type**: Action
+- **Description**: Submit data to Formaloo forms
+- **Operations**:
+  - Submit Form: Submit data to a specific Formaloo form
 
-## Prerequisites
+## Credentials
 
-You need the following installed on your development machine:
+The nodes require Formaloo API credentials with the following fields:
+- **Auth Token**: JWT authentication token
+- **API Key**: Your Formaloo API key
+- **Workspace**: Your Formaloo workspace identifier
 
-* [git](https://git-scm.com/downloads)
-* Node.js and npm. Minimum version Node 20. You can find instructions on how to install both using nvm (Node Version Manager) for Linux, Mac, and WSL [here](https://github.com/nvm-sh/nvm). For Windows users, refer to Microsoft's guide to [Install NodeJS on Windows](https://docs.microsoft.com/en-us/windows/dev-environment/javascript/nodejs-on-windows).
-* Install n8n with:
-  ```
-  npm install n8n -g
-  ```
-* Recommended: follow n8n's guide to [set up your development environment](https://docs.n8n.io/integrations/creating-nodes/build/node-development-environment/).
+## Installation
 
-## Using this starter
-
-These are the basic steps for working with the starter. For detailed guidance on creating and publishing nodes, refer to the [documentation](https://docs.n8n.io/integrations/creating-nodes/).
-
-1. [Generate a new repository](https://github.com/n8n-io/n8n-nodes-starter/generate) from this template repository.
-2. Clone your new repo:
+1. Install the package:
+   ```bash
+   npm install n8n-nodes-formaloo
    ```
-   git clone https://github.com/<your organization>/<your-repo-name>.git
-   ```
-3. Run `npm i` to install dependencies.
-4. Open the project in your editor.
-5. Browse the examples in `/nodes` and `/credentials`. Modify the examples, or replace them with your own nodes.
-6. Update the `package.json` to match your details.
-7. Run `npm run lint` to check for errors or `npm run lintfix` to automatically fix errors when possible.
-8. Test your node locally. Refer to [Run your node locally](https://docs.n8n.io/integrations/creating-nodes/test/run-node-locally/) for guidance.
-9. Replace this README with documentation for your node. Use the [README_TEMPLATE](README_TEMPLATE.md) to get started.
-10. Update the LICENSE file to use your details.
-11. [Publish](https://docs.npmjs.com/packages-and-modules/contributing-packages-to-the-registry) your package to npm.
 
-## More information
+2. Add the nodes to your n8n instance by copying the `dist` folder to your n8n custom nodes directory.
 
-Refer to our [documentation on creating nodes](https://docs.n8n.io/integrations/creating-nodes/) for detailed information on building your own nodes.
+## Usage
+
+### Setting up the Trigger Node
+
+1. Add a "Formaloo Trigger" node to your workflow
+2. Configure your Formaloo API credentials
+3. Select the form you want to monitor
+4. Choose the event type (form submit, row update, etc.)
+5. The node will create a webhook in Formaloo and trigger your workflow when events occur
+
+### Setting up the Action Node
+
+1. Add a "Formaloo" node to your workflow
+2. Configure your Formaloo API credentials
+3. Select the form you want to submit to
+4. Add form fields with their IDs and values
+5. Optionally add additional fields like submit code, recaptcha value, etc.
+
+## API Endpoints
+
+The nodes use the following Formaloo API endpoints:
+- **Forms List**: `GET https://api.formaloo.me/v3.0/forms/`
+- **Webhooks**: `POST/GET/DELETE https://api.formaloo.me/v3.0/forms/{formSlug}/webhooks/`
+- **Form Submit**: `POST https://api.formaloo.me/v3.0/form-displays/slug/{formSlug}/submit/`
+
+## Development
+
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Build the project: `npm run build`
+4. Test locally with n8n
 
 ## License
 
-[MIT](https://github.com/n8n-io/n8n-nodes-starter/blob/master/LICENSE.md)
+[MIT](LICENSE.md)

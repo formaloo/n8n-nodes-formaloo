@@ -6,6 +6,7 @@ import {
 	IHttpRequestMethods,
 	IWebhookResponseData,
 	NodeConnectionType,
+	NodeOperationError,
 } from 'n8n-workflow';
 
 import { getForms } from './FormalooFunctions';
@@ -39,14 +40,14 @@ export class FormalooTrigger implements INodeType {
 		],
 		properties: [
 			{
-				displayName: 'Form',
+				displayName: 'Form Name or ID',
 				name: 'formSlug',
 				type: 'options',
 				typeOptions: {
 					loadOptionsMethod: 'getForms',
 				},
 				default: '',
-				description: 'Select the Formaloo form to watch',
+				description: 'Select the Formaloo form to watch. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
 				required: true,
 			},
 			{
@@ -127,12 +128,12 @@ export class FormalooTrigger implements INodeType {
 
 				// Validate credentials
 				if (!credentials.authToken || !credentials.apiKey || !credentials.workspace) {
-					throw new Error('Missing required credentials. Please check your Formaloo API credentials.');
+					throw new NodeOperationError(this.getNode(), 'Missing required credentials. Please check your Formaloo API credentials.');
 				}
 
 				// Validate form slug
 				if (!formSlug || formSlug.trim() === '') {
-					throw new Error('Form is required. Please select a form from the dropdown.');
+					throw new NodeOperationError(this.getNode(), 'Form is required. Please select a form from the dropdown.');
 				}
 
 				try {
@@ -163,7 +164,7 @@ export class FormalooTrigger implements INodeType {
 					console.log("response", response)
 
 					if (response.status !== 200) {
-						throw new Error('Failed to create webhook: No webhook ID returned');
+						throw new NodeOperationError(this.getNode(), 'Failed to create webhook: No webhook ID returned');
 					}
 
 					const staticData = this.getWorkflowStaticData('node');
@@ -176,7 +177,7 @@ export class FormalooTrigger implements INodeType {
 
 					return true;
 				} catch (error) {
-					throw new Error(`Failed to create Formaloo webhook: ${error.message}`);
+					throw new NodeOperationError(this.getNode(), `Failed to create Formaloo webhook: ${error.message}`);
 				}
 			},
 
@@ -253,7 +254,7 @@ export class FormalooTrigger implements INodeType {
 					received_at: new Date().toISOString(),
 					form_slug: body.form,
 					event_type: staticData.event,
-					webhook_slug = staticData.webhookSlug
+					webhook_slug: staticData.webhookSlug
 				},
 			};
 

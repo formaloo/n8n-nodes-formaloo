@@ -1,22 +1,47 @@
 {
-  "node": "n8n-nodes-base.FormalooTrigger",
-  "nodeVersion": "1.0",
-  "codexVersion": "1.0",
-  "categories": [
-    "Productivity",
-    "Forms",
-    "Triggers"
-  ],
-  "resources": {
-    "credentialDocumentation": [
-      {
-        "url": "https://docs.formaloo.com/#/operations/formsWebhooksList"
+  "nodes": [
+    {
+      "node": "n8n-nodes-base.FormalooTrigger",
+      "nodeVersion": "1.0",
+      "codexVersion": "1.0",
+      "categories": [
+        "Productivity",
+        "Forms",
+        "Triggers"
+      ],
+      "resources": {
+        "credentialDocumentation": [
+          {
+            "url": "https://docs.formaloo.com/#/operations/formsWebhooksList"
+          }
+        ],
+        "primaryDocumentation": [
+          {
+            "url": "https://docs.formaloo.com/#/operations/formsWebhooksList"
+          }
+        ]
       }
-    ],
-    "primaryDocumentation": [
-      {
-        "url": "https://docs.formaloo.com/#/operations/formsWebhooksList"
+    },
+    {
+      "node": "n8n-nodes-base.FormalooAction",
+      "nodeVersion": "1.0",
+      "codexVersion": "1.0",
+      "categories": [
+        "Productivity",
+        "Forms"
+      ],
+      "resources": {
+        "credentialDocumentation": [
+          {
+            "url": "https://docs.formaloo.com/#/operations/formsWebhooksList"
+          }
+        ],
+        "primaryDocumentation": [
+          {
+            "url": "https://docs.formaloo.com/#/operations/formsWebhooksList"
+          }
+        ]
       }
-    ]
-  }
+    }
+  ]
 }
