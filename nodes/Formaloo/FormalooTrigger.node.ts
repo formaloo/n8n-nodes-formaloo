@@ -228,6 +228,7 @@ export class FormalooTrigger implements INodeType {
 		try {
 			console.log('Webhook receiveddddddddddddddddddddddddddd');
 			const body = this.getRequestObject().body;
+			const staticData = this.getWorkflowStaticData('node');
 			console.log('bodyyyyyyyyyyyyyy', body)
 
 			// Process the webhook data
@@ -250,9 +251,9 @@ export class FormalooTrigger implements INodeType {
 				...processedData,
 				_webhook_metadata: {
 					received_at: new Date().toISOString(),
-					event_type: body.event || body.type || 'unknown',
-					form_slug: body.form_slug || body.form || 'unknown',
-					webhook_id: body.webhook_id || 'unknown',
+					form_slug: body.form,
+					event_type: staticData.event,
+					webhook_slug = staticData.webhookSlug
 				},
 			};
 
