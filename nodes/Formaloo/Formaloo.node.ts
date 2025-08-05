@@ -8,7 +8,7 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 
-import { getForms } from './FormalooFunctions';
+import { getForms, getFormFields } from './FormalooFunctions';
 
 export class Formaloo implements INodeType {
 	description: INodeTypeDescription = {
@@ -82,11 +82,14 @@ export class Formaloo implements INodeType {
 						displayName: 'Fields',
 						values: [
 							{
-								displayName: 'Field ID',
+								displayName: 'Field Name or ID',
 								name: 'fieldId',
-								type: 'string',
+								type: 'options',
+								typeOptions: {
+									loadOptionsMethod: 'getFormFields',
+								},
 								default: '',
-								description: 'The field ID from the form',
+								description: 'The field ID from the form. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
 								required: true,
 							},
 							{
@@ -149,6 +152,7 @@ export class Formaloo implements INodeType {
 	methods = {
 		loadOptions: {
 			getForms,
+			getFormFields,
 		},
 	};
 
@@ -217,20 +221,10 @@ export class Formaloo implements INodeType {
 						method: 'POST' as IHttpRequestMethods,
 						body: requestBody,
 						headers: {
-							'accept': 'application/json',
-							'accept-language': 'en-US,en;q=0.9,fa;q=0.8,tr;q=0.7',
-							'content-type': 'application/json',
-							'origin': 'https://leitner-box.formaloo.me',
-							'priority': 'u=1, i',
-							'sec-ch-ua': '"Chromium";v="136", "Google Chrome";v="136", "Not.A/Brand";v="99"',
-							'sec-ch-ua-mobile': '?0',
-							'sec-ch-ua-platform': '"Linux"',
-							'sec-fetch-dest': 'empty',
-							'sec-fetch-mode': 'cors',
-							'sec-fetch-site': 'same-site',
-							'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36',
-							'x-api-key': credentials.apiKey,
-							'x-workspace': credentials.workspace,
+							'Authorization': `JWT ${credentials.authToken}`,
+							'X-Api-Key': credentials.apiKey,
+							'X-Workspace': credentials.workspace,
+							'Content-Type': 'application/json',
 						},
 						json: true,
 					};
