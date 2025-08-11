@@ -35,11 +35,9 @@ export async function getForms(this: ILoadOptionsFunctions): Promise<INodeProper
 			throw new Error('Invalid response from Formaloo API');
 		}
 
-		console.log('row forms', response.data.forms)
-
-		const forms = response.data.forms.map((form: any) => ({
+		const forms = response.data.forms.filter((form: any) => form.slug !== '').map((form: any) => ({
 			name: `${form.title} - ${form.slug}`,
-			value: form.slug,
+			value: form.slug
 		}));
 
 		console.log('Forms parsed successfully', forms);
@@ -86,7 +84,7 @@ export async function getFormFields(this: ILoadOptionsFunctions): Promise<INodeP
 		}
 
 		const fields = response.data.form.fields_list
-			.filter((field: any) => field.type !== 'success_page')
+			.filter((field: any) => field.type !== 'success_page' && field.title && field.slug)
 			.map((field: any) => ({
 				name: field.title,
 				value: field.slug,
