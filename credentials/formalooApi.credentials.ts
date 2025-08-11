@@ -12,8 +12,8 @@ export class formalooApi implements ICredentialType {
 
 	properties: INodeProperties[] = [
 		{
-			displayName: 'Auth Token',
-			name: 'authToken',
+			displayName: 'Secret API',
+			name: 'secret_api',
 			type: 'string',
 			typeOptions: {
 				password: true,
@@ -23,18 +23,11 @@ export class formalooApi implements ICredentialType {
 		},
 		{
 			displayName: 'API Key',
-			name: 'apiKey',
+			name: 'api_key',
 			type: 'string',
 			typeOptions: {
 				password: true,
 			},
-			default: '',
-			required: true,
-		},
-		{
-			displayName: 'Workspace',
-			name: 'workspace',
-			type: 'string',
 			default: '',
 			required: true,
 		},
@@ -44,9 +37,8 @@ export class formalooApi implements ICredentialType {
 		type: 'generic',
 		properties: {
 			headers: {
-				'Authorization': 'JWT {{$credentials.authToken}}',
-				'X-Api-Key': '={{$credentials.apiKey}}',
-				'X-Workspace': '={{$credentials.workspace}}',
+				'X-Api-Key': '={{$credentials.api_key}}',
+				'Content-Type': 'application/json',
 			},
 		},
 	};

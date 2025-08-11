@@ -2,24 +2,27 @@ import {
 	ILoadOptionsFunctions,
 	INodePropertyOptions,
 	IHttpRequestMethods,
+	IExecuteFunctions,
 } from 'n8n-workflow';
 
 export async function getForms(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 	const credentials = await this.getCredentials('formalooApi');
 
-	if (!credentials.authToken || !credentials.apiKey || !credentials.workspace) {
+	if (!credentials.secret_api || !credentials.api_key) {
 		throw new Error('Missing required credentials. Please check your Formaloo API credentials.');
 	}
 
 	try {
+		// Get JWT token using Basic authentication
+		const jwtToken = await getJWTToken.call(this, credentials.secret_api as string);
+
 		const apiUrl = 'https://api.formaloo.me/v3.0/forms/';
 
 		const options = {
 			method: 'GET' as IHttpRequestMethods,
 			headers: {
-				'Authorization': `JWT ${credentials.authToken}`,
-				'X-Api-Key': credentials.apiKey,
-				'X-Workspace': credentials.workspace,
+				'Authorization': `JWT ${jwtToken}`,
+				'X-Api-Key': credentials.api_key,
 				'Content-Type': 'application/json',
 			},
 			json: true,
@@ -32,13 +35,14 @@ export async function getForms(this: ILoadOptionsFunctions): Promise<INodeProper
 			throw new Error('Invalid response from Formaloo API');
 		}
 
+		console.log('row forms', response.data.forms)
+
 		const forms = response.data.forms.map((form: any) => ({
-			name: form.title,
+			name: `${form.title} - ${form.slug}`,
 			value: form.slug,
-			description: form.description,
 		}));
 
-		console.log('Forms parsed successfully');
+		console.log('Forms parsed successfully', forms);
 
 		return forms;
 	} catch (error) {
@@ -50,7 +54,7 @@ export async function getFormFields(this: ILoadOptionsFunctions): Promise<INodeP
 	const credentials = await this.getCredentials('formalooApi');
 	const formSlug = this.getNodeParameter('formSlug') as string;
 
-	if (!credentials.authToken || !credentials.apiKey || !credentials.workspace) {
+	if (!credentials.secret_api || !credentials.api_key) {
 		throw new Error('Missing required credentials. Please check your Formaloo API credentials.');
 	}
 
@@ -59,14 +63,16 @@ export async function getFormFields(this: ILoadOptionsFunctions): Promise<INodeP
 	}
 
 	try {
+		// Get JWT token using Basic authentication
+		const jwtToken = await getJWTToken.call(this, credentials.secret_api as string);
+
 		const apiUrl = `https://api.formaloo.me/v3.0/forms/${formSlug}/`;
 
 		const options = {
 			method: 'GET' as IHttpRequestMethods,
 			headers: {
-				'Authorization': `JWT ${credentials.authToken}`,
-				'X-Api-Key': credentials.apiKey,
-				'X-Workspace': credentials.workspace,
+				'Authorization': `JWT ${jwtToken}`,
+				'X-Api-Key': credentials.api_key,
 				'Content-Type': 'application/json',
 			},
 			json: true,
@@ -79,16 +85,72 @@ export async function getFormFields(this: ILoadOptionsFunctions): Promise<INodeP
 			throw new Error('Invalid response from Formaloo API');
 		}
 
-		const fields = response.data.form.fields_list.map((field: any) => ({
-			name: field.title,
-			value: field.slug,
-			description: field.description,
-		}));
+		const fields = response.data.form.fields_list
+			.filter((field: any) => field.type !== 'success_page')
+			.map((field: any) => ({
+				name: field.title,
+				value: field.slug,
+			}));
 
-		console.log('Form fields parsed successfully');
+		console.log('Form fields parsed successfully', fields);
 
 		return fields;
 	} catch (error) {
 		throw new Error(`Failed to load form fields: ${error.message}`);
+	}
+}
+
+export async function getJWTToken(this: ILoadOptionsFunctions, secretApi: string): Promise<string> {
+	try {
+		const authUrl = 'https://api.formaloo.me/v3.0/oauth2/authorization-token/';
+		const options = {
+			method: 'POST' as IHttpRequestMethods,
+			body: {
+				grant_type: 'client_credentials',
+			},
+			headers: {
+				'Authorization': `Basic ${secretApi}`,
+			},
+			json: true,
+		};
+
+
+		const response = await this.helpers.request!(authUrl, options);
+
+		if (response && response.authorization_token) {
+			return response.authorization_token;
+		} else {
+			throw new Error('Failed to get JWT token from authentication endpoint');
+		}
+	} catch (error) {
+		throw new Error(`Authentication failed: ${error.message}`);
+	}
+}
+
+export async function getJWTTokenExecute(this: IExecuteFunctions, secretApi: string): Promise<string> {
+	try {
+		const authUrl = 'https://api.formaloo.me/v3.0/oauth2/authorization-token/';
+
+		const options = {
+			method: 'POST' as IHttpRequestMethods,
+			body: {
+				grant_type: 'client_credentials',
+			},
+			headers: {
+				'Authorization': `Basic ${secretApi}`,
+				'Content-Type': 'application/json',
+			},
+			json: true,
+		};
+
+		const response = await this.helpers.request!(authUrl, options);
+
+		if (response && response.authorization_token) {
+			return response.authorization_token;
+		} else {
+			throw new Error('Failed to get JWT token from authentication endpoint');
+		}
+	} catch (error) {
+		throw new Error(`Authentication failed: ${error.message}`);
 	}
 }

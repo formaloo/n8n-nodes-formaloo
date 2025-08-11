@@ -8,7 +8,7 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 
-import { getForms, getFormFields } from './FormalooFunctions';
+import { getForms, getFormFields, getJWTTokenExecute } from './FormalooFunctions';
 
 export class Formaloo implements INodeType {
 	description: INodeTypeDescription = {
@@ -35,6 +35,7 @@ export class Formaloo implements INodeType {
 				name: 'operation',
 				type: 'options',
 				noDataExpression: true,
+				required: true,
 				options: [
 					{
 						name: 'Submit Form',
@@ -104,48 +105,6 @@ export class Formaloo implements INodeType {
 					},
 				],
 			},
-			{
-				displayName: 'Additional Fields',
-				name: 'additionalFields',
-				type: 'collection',
-				placeholder: 'Add Field',
-				default: {},
-				displayOptions: {
-					show: {
-						operation: ['submitForm'],
-					},
-				},
-				options: [
-					{
-						displayName: 'Submit Code',
-						name: 'submitCode',
-						type: 'string',
-						default: '',
-						description: 'Optional submit code for the form',
-					},
-					{
-						displayName: 'Recaptcha Value',
-						name: 'recaptchaValue',
-						type: 'string',
-						default: '',
-						description: 'Recaptcha value if the form has recaptcha enabled',
-					},
-					{
-						displayName: 'Submitter Referer Address',
-						name: 'submitterRefererAddress',
-						type: 'string',
-						default: '',
-						description: 'The referer address for the submission',
-					},
-					{
-						displayName: 'Submit Time',
-						name: 'submitTime',
-						type: 'string',
-						default: '',
-						description: 'The submit time in HH:MM:SS format',
-					},
-				],
-			},
 		],
 	};
 
@@ -169,17 +128,11 @@ export class Formaloo implements INodeType {
 					const formData = this.getNodeParameter('formData', i) as {
 						fields: Array<{ fieldId: string; value: string }>;
 					};
-					const additionalFields = this.getNodeParameter('additionalFields', i) as {
-						submitCode?: string;
-						recaptchaValue?: string;
-						submitterRefererAddress?: string;
-						submitTime?: string;
-					};
 
 					const credentials = await this.getCredentials('formalooApi');
 
 					// Validate credentials
-					if (!credentials.authToken || !credentials.apiKey || !credentials.workspace) {
+					if (!credentials.secret_api || !credentials.api_key) {
 						throw new NodeOperationError(this.getNode(), 'Missing required credentials. Please check your Formaloo API credentials.');
 					}
 
@@ -187,6 +140,9 @@ export class Formaloo implements INodeType {
 					if (!formSlug || formSlug.trim() === '') {
 						throw new NodeOperationError(this.getNode(), 'Form is required. Please select a form from the dropdown.');
 					}
+
+					// Get JWT token using Basic authentication
+					const jwtToken = await getJWTTokenExecute.call(this, credentials.secret_api as string);
 
 					// Build the request body
 					const requestBody: any = {};
@@ -200,20 +156,6 @@ export class Formaloo implements INodeType {
 						}
 					}
 
-					// Add additional fields
-					if (additionalFields.submitCode) {
-						requestBody.submit_code = additionalFields.submitCode;
-					}
-					if (additionalFields.recaptchaValue) {
-						requestBody.recaptcha_value = additionalFields.recaptchaValue;
-					}
-					if (additionalFields.submitterRefererAddress) {
-						requestBody.submitter_referer_address = additionalFields.submitterRefererAddress;
-					}
-					if (additionalFields.submitTime) {
-						requestBody.submit_time = additionalFields.submitTime;
-					}
-
 					// Make the API request
 					const apiUrl = `https://api.formaloo.me/v3.0/form-displays/slug/${formSlug}/submit/`;
 
@@ -221,9 +163,8 @@ export class Formaloo implements INodeType {
 						method: 'POST' as IHttpRequestMethods,
 						body: requestBody,
 						headers: {
-							'Authorization': `JWT ${credentials.authToken}`,
-							'X-Api-Key': credentials.apiKey,
-							'X-Workspace': credentials.workspace,
+							'Authorization': `JWT ${jwtToken}`,
+							'X-Api-Key': credentials.api_key,
 							'Content-Type': 'application/json',
 						},
 						json: true,
