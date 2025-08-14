@@ -12,8 +12,8 @@ export class formalooApi implements ICredentialType {
 
 	properties: INodeProperties[] = [
 		{
-			displayName: 'Secret API',
-			name: 'secret_api',
+			displayName: 'API Key',
+			name: 'api_key',
 			type: 'string',
 			typeOptions: {
 				password: true,
@@ -22,8 +22,8 @@ export class formalooApi implements ICredentialType {
 			required: true,
 		},
 		{
-			displayName: 'API Key',
-			name: 'api_key',
+			displayName: 'Secret API',
+			name: 'secret_api',
 			type: 'string',
 			typeOptions: {
 				password: true,
