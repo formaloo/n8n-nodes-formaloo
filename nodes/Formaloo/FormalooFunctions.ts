@@ -3,6 +3,7 @@ import {
 	INodePropertyOptions,
 	IHttpRequestMethods,
 	IExecuteFunctions,
+	IHookFunctions,
 } from 'n8n-workflow';
 
 export async function getForms(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
@@ -123,6 +124,33 @@ export async function getJWTTokenExecute(this: IExecuteFunctions, secretApi: str
 	try {
 		const authUrl = 'https://api.formaloo.me/v3.0/oauth2/authorization-token/';
 
+		const options = {
+			method: 'POST' as IHttpRequestMethods,
+			body: {
+				grant_type: 'client_credentials',
+			},
+			headers: {
+				'Authorization': `Basic ${secretApi}`,
+				'Content-Type': 'application/json',
+			},
+			json: true,
+		};
+
+		const response = await this.helpers.request!(authUrl, options);
+
+		if (response && response.authorization_token) {
+			return response.authorization_token;
+		} else {
+			throw new Error('Failed to get JWT token from authentication endpoint');
+		}
+	} catch (error) {
+		throw new Error(`Authentication failed: ${error.message}`);
+	}
+}
+
+export async function getJWTTokenHook(this: IHookFunctions, secretApi: string): Promise<string> {
+	try {
+		const authUrl = 'https://api.formaloo.me/v3.0/oauth2/authorization-token/';
 		const options = {
 			method: 'POST' as IHttpRequestMethods,
 			body: {

@@ -9,7 +9,7 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 
-import { getForms } from './FormalooFunctions';
+import { getForms, getJWTTokenHook } from './FormalooFunctions';
 
 export class FormalooTrigger implements INodeType {
 	description: INodeTypeDescription = {
@@ -17,7 +17,8 @@ export class FormalooTrigger implements INodeType {
 		name: 'formalooTrigger',
 		icon: 'file:formaloo-picture.png',
 		group: ['trigger'],
-		version: 1,
+		defaultVersion: 1,
+		version: [1],
 		description: 'Trigger workflow on Formaloo form submissions and updates',
 		defaults: {
 			name: 'Formaloo Trigger',
@@ -47,7 +48,7 @@ export class FormalooTrigger implements INodeType {
 					loadOptionsMethod: 'getForms',
 				},
 				default: '',
-				description: 'Select the Formaloo form to watch. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
+				description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
 				required: true,
 			},
 			{
@@ -101,13 +102,15 @@ export class FormalooTrigger implements INodeType {
 				}
 
 				try {
+					// Get JWT token using Basic authentication
+					const jwtToken = await getJWTTokenHook.call(this, credentials.secret_api as string);
+
 					const apiUrl = `https://api.formaloo.me/v3.0/forms/${formSlug}/webhooks/${webhookSlug}/`;
 					const options = {
 						method: 'GET' as IHttpRequestMethods,
 						headers: {
-							'Authorization': `JWT ${credentials.authToken}`,
-							'X-Api-Key': credentials.apiKey,
-							'X-Workspace': credentials.workspace,
+							'Authorization': `JWT ${jwtToken}`,
+							'X-Api-Key': credentials.api_key,
 							'Content-Type': 'application/json',
 						},
 						json: true,
@@ -127,7 +130,7 @@ export class FormalooTrigger implements INodeType {
 				const webhookUrl = this.getNodeWebhookUrl('default');
 
 				// Validate credentials
-				if (!credentials.authToken || !credentials.apiKey || !credentials.workspace) {
+				if (!credentials.secret_api || !credentials.api_key) {
 					throw new NodeOperationError(this.getNode(), 'Missing required credentials. Please check your Formaloo API credentials.');
 				}
 
@@ -137,6 +140,9 @@ export class FormalooTrigger implements INodeType {
 				}
 
 				try {
+					// Get JWT token using Basic authentication
+					const jwtToken = await getJWTTokenHook.call(this, credentials.secret_api as string);
+
 					const apiUrl = `https://api.formaloo.me/v3.0/forms/${formSlug}/webhooks/`;
 					const body = {
 						title: `n8n workflow on ${event}`,
@@ -152,9 +158,8 @@ export class FormalooTrigger implements INodeType {
 						method: 'POST' as IHttpRequestMethods,
 						body,
 						headers: {
-							'Authorization': `JWT ${credentials.authToken}`,
-							'X-Api-Key': credentials.apiKey,
-							'X-Workspace': credentials.workspace,
+							'Authorization': `JWT ${jwtToken}`,
+							'X-Api-Key': credentials.api_key,
 							'Content-Type': 'application/json',
 						},
 						json: true,
@@ -188,13 +193,15 @@ export class FormalooTrigger implements INodeType {
 				}
 
 				try {
+					// Get JWT token using Basic authentication
+					const jwtToken = await getJWTTokenHook.call(this, credentials.secret_api as string);
+
 					const apiUrl = `https://api.formaloo.me/v3.0/forms/${formSlug}/webhooks/${webhookSlug}/`;
 					const options = {
 						method: 'DELETE' as IHttpRequestMethods,
 						headers: {
-							'Authorization': `JWT ${credentials.authToken}`,
-							'X-Api-Key': credentials.apiKey,
-							'X-Workspace': credentials.workspace,
+							'Authorization': `JWT ${jwtToken}`,
+							'X-Api-Key': credentials.api_key,
 							'Content-Type': 'application/json',
 						},
 						json: true,
