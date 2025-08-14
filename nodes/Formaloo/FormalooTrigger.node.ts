@@ -161,19 +161,15 @@ export class FormalooTrigger implements INodeType {
 					};
 
 					const response = await this.helpers.request!(apiUrl, options);
-					console.log("response", response)
 
 					if (response.status !== 200) {
 						throw new NodeOperationError(this.getNode(), 'Failed to create webhook: No webhook ID returned');
 					}
 
 					const staticData = this.getWorkflowStaticData('node');
-					console.log('staticData beforeeeeeeeee', staticData)
 					staticData.webhookSlug = response.data.webhook.slug;
 					staticData.formSlug = formSlug;
 					staticData.event = event;
-
-					console.log('staticData afterrrrrrrrrrrr', staticData)
 
 					return true;
 				} catch (error) {
@@ -204,20 +200,14 @@ export class FormalooTrigger implements INodeType {
 						json: true,
 					};
 
-					console.log('Deleting webhook with URL:', apiUrl);
-
 					await this.helpers.request!(apiUrl, options);
 
 					delete staticData.webhookSlug;
 					delete staticData.formSlug;
 					delete staticData.event;
 
-					console.log('Webhook deleted successfully');
-					console.log('staticData afterrrrrrrrrrrr', staticData)
-
 					return true;
 				} catch (error) {
-					console.log('Error deleting webhook:', error);
 					// Don't throw error on deletion failure
 					return true;
 				}
@@ -227,10 +217,8 @@ export class FormalooTrigger implements INodeType {
 
 	async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
 		try {
-			console.log('Webhook receiveddddddddddddddddddddddddddd');
 			const body = this.getRequestObject().body;
 			const staticData = this.getWorkflowStaticData('node');
-			console.log('bodyyyyyyyyyyyyyy', body)
 
 			// Process the webhook data
 			let processedData = body;
@@ -240,12 +228,9 @@ export class FormalooTrigger implements INodeType {
 				try {
 					processedData = JSON.parse(body);
 				} catch (e) {
-					console.log('Error parsing body:', e);
 					// Keep as string if not valid JSON
 				}
 			}
-
-			console.log('processedDataaaaaaa', processedData)
 
 			// Add metadata about the webhook
 			const webhookData = {
@@ -258,13 +243,10 @@ export class FormalooTrigger implements INodeType {
 				},
 			};
 
-			console.log('webhookDataaaaaaa', webhookData)
-
 			return {
 				workflowData: [[{ json: webhookData }]],
 			};
 		} catch (error) {
-			console.log("error happended", error)
 			return {
 				workflowData: [[
 					{

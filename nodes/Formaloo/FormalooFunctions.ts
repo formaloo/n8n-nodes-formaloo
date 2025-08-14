@@ -31,7 +31,6 @@ export async function getForms(this: ILoadOptionsFunctions): Promise<INodeProper
 		const response = await this.helpers.request!(apiUrl, options);
 
 		if (!response.data || !Array.isArray(response.data.forms)) {
-			console.log('getForms error:', response);
 			throw new Error('Invalid response from Formaloo API');
 		}
 
@@ -39,8 +38,6 @@ export async function getForms(this: ILoadOptionsFunctions): Promise<INodeProper
 			name: `${form.title} - ${form.slug}`,
 			value: form.slug
 		}));
-
-		console.log('Forms parsed successfully', forms);
 
 		return forms;
 	} catch (error) {
@@ -79,7 +76,6 @@ export async function getFormFields(this: ILoadOptionsFunctions): Promise<INodeP
 		const response = await this.helpers.request!(apiUrl, options);
 
 		if (!response.data || !response.data.form || !Array.isArray(response.data.form.fields_list)) {
-			console.log('getFormFields error:', response);
 			throw new Error('Invalid response from Formaloo API');
 		}
 
@@ -89,8 +85,6 @@ export async function getFormFields(this: ILoadOptionsFunctions): Promise<INodeP
 				name: field.title,
 				value: field.slug,
 			}));
-
-		console.log('Form fields parsed successfully', fields);
 
 		return fields;
 	} catch (error) {
