@@ -16,7 +16,8 @@ export class Formaloo implements INodeType {
 		name: 'formaloo',
 		icon: 'file:formaloo-picture.png',
 		group: ['transform'],
-		version: 1,
+		defaultVersion: 1,
+    version: [1],
 		description: 'Submit data to Formaloo forms',
 		defaults: {
 			name: 'Formaloo',
@@ -47,7 +48,7 @@ export class Formaloo implements INodeType {
 				default: 'submitForm',
 			},
 			{
-				displayName: 'Form Name or ID',
+				displayName: 'Form Name',
 				name: 'formSlug',
 				type: 'options',
 				typeOptions: {
@@ -83,7 +84,7 @@ export class Formaloo implements INodeType {
 						displayName: 'Fields',
 						values: [
 							{
-								displayName: 'Field Name or ID',
+								displayName: 'Field Name',
 								name: 'fieldId',
 								type: 'options',
 								typeOptions: {
