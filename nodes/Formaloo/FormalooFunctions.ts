@@ -17,25 +17,35 @@ export async function getForms(this: ILoadOptionsFunctions): Promise<INodeProper
 		// Get JWT token using Basic authentication
 		const jwtToken = await getJWTToken.call(this, credentials.secret_api as string);
 
-		const apiUrl = 'https://api.formaloo.me/v3.0/forms/';
+		let allForms: any[] = [];
+		let nextUrl = 'https://api.formaloo.me/v3.0/forms/';
 
-		const options = {
-			method: 'GET' as IHttpRequestMethods,
-			headers: {
-				'Authorization': `JWT ${jwtToken}`,
-				'X-Api-Key': credentials.api_key,
-				'Content-Type': 'application/json',
-			},
-			json: true,
-		};
+		// Fetch all pages
+		while (nextUrl) {
+			const options = {
+				method: 'GET' as IHttpRequestMethods,
+				headers: {
+					'Authorization': `JWT ${jwtToken}`,
+					'X-Api-Key': credentials.api_key,
+					'Content-Type': 'application/json',
+				},
+				json: true,
+			};
 
-		const response = await this.helpers.request!(apiUrl, options);
+			const response = await this.helpers.request!(nextUrl, options);
 
-		if (!response.data || !Array.isArray(response.data.forms)) {
+			if (!response.data || !Array.isArray(response.data.forms)) {
 			throw new Error('Invalid response from Formaloo API');
+			}
+
+			// Add forms from current page
+			allForms = allForms.concat(response.data.forms);
+
+			// Check if there's a next page
+			nextUrl = response.data.next || null;
 		}
 
-		const forms = response.data.forms.filter((form: any) => form.slug !== '').map((form: any) => ({
+		const forms = allForms.filter((form: any) => form.slug !== '').map((form: any) => ({
 			name: `${form.title} - ${form.slug}`,
 			value: form.slug
 		}));
@@ -81,15 +91,73 @@ export async function getFormFields(this: ILoadOptionsFunctions): Promise<INodeP
 		}
 
 		const fields = response.data.form.fields_list
-			.filter((field: any) => field.type !== 'success_page' && field.title && field.slug)
+			.filter((field: any) =>
+				!['success_page',
+					'matrix',
+					'table',
+					'lookup',
+					'user',
+					'profile',
+					'linked_rows',
+					'repeating_section'
+				].includes(field.type) &&
+				field.title &&
+				field.slug
+			)
 			.map((field: any) => ({
-				name: field.title,
-				value: field.slug,
+				name: `${field.title} - ${field.type}`,
+				value: `${field.slug} - ${field.type}`,
 			}));
 
 		return fields;
 	} catch (error) {
 		throw new Error(`Failed to load form fields: ${error.message}`);
+	}
+}
+
+export async function getFieldOptionsExecute(this: IExecuteFunctions, fieldSlug: string): Promise<Array<{title: string, slug: string}>> {
+	const credentials = await this.getCredentials('formalooApi');
+
+	if (!credentials.secret_api || !credentials.api_key) {
+		throw new Error('Missing required credentials. Please check your Formaloo API credentials.');
+	}
+
+	console.log('fieldSlug', fieldSlug);
+
+	if (!fieldSlug) {
+		return [];
+	}
+
+	try {
+		// Get JWT token using Basic authentication
+		const jwtToken = await getJWTTokenExecute.call(this, credentials.secret_api as string);
+
+		const apiUrl = `https://api.formaloo.me/v3.0/fields/${fieldSlug}/`;
+
+		const options = {
+			method: 'GET' as IHttpRequestMethods,
+			headers: {
+				'Authorization': `JWT ${jwtToken}`,
+				'X-Api-Key': credentials.api_key,
+				'Content-Type': 'application/json',
+			},
+			json: true,
+		};
+
+		const response = await this.helpers.request!(apiUrl, options);
+
+		if (!response.data || !response.data.field || !response.data.field.choice_items) {
+			throw new Error('Invalid response from Formaloo API or no options found');
+		}
+
+		const fieldOptions = response.data.field.choice_items.map((option: any) => ({
+			title: option.title,
+			slug: option.slug,
+		}));
+
+		return fieldOptions;
+	} catch (error) {
+		throw new Error(`Failed to load field options: ${error.message}`);
 	}
 }
 
