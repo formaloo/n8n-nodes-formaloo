@@ -8,7 +8,7 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 
-import { getForms, getFormFields, getJWTTokenExecute, getFieldOptionsExecute } from './FormalooFunctions';
+import { getForms, getFormFields, getJWTTokenExecute, getFieldOptionsExecute, searchCityCountryChoices } from './FormalooFunctions';
 
 export class Formaloo implements INodeType {
 	description: INodeTypeDescription = {
@@ -130,10 +130,6 @@ export class Formaloo implements INodeType {
 						fields: Array<{ fieldId: string; value: string }>;
 					};
 
-					console.log('node dataaaaaaaaaaaaaaaaaaaa', this.getNodeParameter('formData', i));
-					console.log('fielddddddddddddddddddddddddddd', formData.fields[0].fieldId, formData.fields[0].value);
-					console.log('formDataaaaaa', formData);
-
 					const credentials = await this.getCredentials('formalooApi');
 
 					// Validate credentials
@@ -152,7 +148,7 @@ export class Formaloo implements INodeType {
 					// Build the request body
 					const requestBody: any = {};
 
-					const validFieldTypes = ['dropdown', 'choice', 'multiple_select'] as const;
+					const validFieldTypes = ['dropdown', 'choice', 'multiple_select', 'city', 'country'] as const;
 
 					// Add form fields
 					if (formData.fields && Array.isArray(formData.fields)) {
@@ -163,16 +159,10 @@ export class Formaloo implements INodeType {
 							const fieldId = parts[0];
 							const fieldType = parts[1].trim();
 
-							console.log('fieldType', fieldType);
-							console.log('fieldId', fieldId);
-
 							if (fieldType && validFieldTypes.includes(fieldType as any)) {
-
-								const fieldOptions = await getFieldOptionsExecute.call(this, fieldId);
-
-								console.log('before if');
-								console.log('fieldType', fieldType);
 								if (fieldType == 'dropdown' || fieldType == 'choice') {
+
+									const fieldOptions = await getFieldOptionsExecute.call(this, fieldId);
 
 									const fieldDetails = fieldOptions.find((option: any) => option.title.toLowerCase() === field.value.toLowerCase());
 									if (fieldDetails && fieldDetails.slug) {
@@ -181,27 +171,30 @@ export class Formaloo implements INodeType {
 										throw new NodeOperationError(this.getNode(), `Field option not found for value: ${field.value}`);
 									}
 								} else if (fieldType == 'multiple_select') {
-									console.log('inside multiple select');
 
+									const fieldOptions = await getFieldOptionsExecute.call(this, fieldId);
 									const values = field.value.split(',');
-									console.log('Valueeeeeeeee', values);
 									const fieldDetailsList = [];
 
-									console.log('fieldOptions before loop', fieldOptions);
 									for (const value of values) {
-										console.log('This is the Value', value);
 										const fieldDetails = fieldOptions.find((option: any) => option.title.toLowerCase() === value.trim().toLowerCase());
 										if (fieldDetails && fieldDetails.slug) {
 											// Store fieldDetails.slug in a list
 											fieldDetailsList.push(fieldDetails.slug);
 										}
 									}
-									console.log('fieldDetailsssssssssssssssssss', fieldDetailsList);
 									if (fieldDetailsList && fieldDetailsList.length > 0) {
 										// fieldId = list of slugs
 										requestBody[fieldId] = fieldDetailsList;
 									} else {
 										throw new NodeOperationError(this.getNode(), `Field option not found for value: ${field.value}`);
+									}
+								} else if (fieldType == 'city' || fieldType == 'country') {
+									const cityCountryResult = await searchCityCountryChoices.call(this, fieldId, field.value);
+									if (cityCountryResult) {
+										requestBody[fieldId] = cityCountryResult.slug;
+									} else {
+										throw new NodeOperationError(this.getNode(), `City/Country not found for value: ${field.value}`);
 									}
 								}
 							} else if (field.fieldId && field.value !== undefined) {
@@ -228,8 +221,6 @@ export class Formaloo implements INodeType {
 						},
 						json: true,
 					};
-
-					console.log('requestBody', requestBody);
 
 					const response = await this.helpers.request!(apiUrl, options);
 

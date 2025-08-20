@@ -122,8 +122,6 @@ export async function getFieldOptionsExecute(this: IExecuteFunctions, fieldSlug:
 		throw new Error('Missing required credentials. Please check your Formaloo API credentials.');
 	}
 
-	console.log('fieldSlug', fieldSlug);
-
 	if (!fieldSlug) {
 		return [];
 	}
@@ -158,6 +156,83 @@ export async function getFieldOptionsExecute(this: IExecuteFunctions, fieldSlug:
 		return fieldOptions;
 	} catch (error) {
 		throw new Error(`Failed to load field options: ${error.message}`);
+	}
+}
+
+export async function searchCityCountryChoices(this: IExecuteFunctions, fieldSlug: string, searchValue: string): Promise<{slug: string, title: string} | null> {
+	const credentials = await this.getCredentials('formalooApi');
+
+	if (!credentials.secret_api || !credentials.api_key) {
+		throw new Error('Missing required credentials. Please check your Formaloo API credentials.');
+	}
+
+	if (!fieldSlug || !searchValue) {
+		return null;
+	}
+
+	try {
+		// Get JWT token using Basic authentication
+		const jwtToken = await getJWTTokenExecute.call(this, credentials.secret_api as string);
+
+		const apiUrl = `https://api.formaloo.me/v4/fields/${fieldSlug}/choices/?search=${encodeURIComponent(searchValue)}`;
+
+		const options = {
+			method: 'GET' as IHttpRequestMethods,
+			headers: {
+				'Authorization': `JWT ${jwtToken}`,
+				'X-Api-Key': credentials.api_key,
+				'Content-Type': 'application/json',
+			},
+			json: true,
+		};
+
+		const response = await this.helpers.request!(apiUrl, options);
+
+		if (!response.data || !response.data.objects || !Array.isArray(response.data.objects)) {
+			throw new Error('Invalid response from Formaloo API');
+		}
+
+		const results = response.data.objects;
+		const count = response.data.count;
+
+		// Case 1: No results found
+		if (count === 0) {
+			throw new Error(`No city/country found for search term: "${searchValue}"`);
+		}
+
+		// Case 2: More than one result - check for exact match
+		if (count > 1) {
+			const exactMatches = results.filter((item: any) =>
+				item.title.toLowerCase() === searchValue.toLowerCase()
+			);
+
+			if (exactMatches.length === 1) {
+				// Found exact match
+				return {
+					slug: exactMatches[0].slug,
+					title: exactMatches[0].title
+				};
+			} else if (exactMatches.length > 1) {
+				// Multiple exact matches (shouldn't happen but handle it)
+				throw new Error(`Multiple exact matches found for "${searchValue}": ${exactMatches.map((m: any) => m.title).join(', ')}`);
+			} else {
+				// No exact match, show available options
+				const suggestions = results.slice(0, 10).map((item: any) => item.title).join(', ');
+				throw new Error(`No exact match found for "${searchValue}". Available options include: ${suggestions}${count > 10 ? '...' : ''}`);
+			}
+		}
+
+		// Case 3: Exactly one result
+		if (count === 1 && results.length === 1) {
+			return {
+				slug: results[0].slug,
+				title: results[0].title
+			};
+		}
+
+		return null;
+	} catch (error) {
+		throw new Error(`Failed to search city/country choices: ${error.message}`);
 	}
 }
 
