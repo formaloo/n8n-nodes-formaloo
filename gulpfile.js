@@ -14,3 +14,8 @@ function copyIcons() {
 
 	return src(credSource).pipe(dest(credDestination));
 }
+
+// Export the task for potential programmatic use
+module.exports = {
+	copyIcons
+};
