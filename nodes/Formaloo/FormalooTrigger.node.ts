@@ -5,7 +5,6 @@ import {
 	IHookFunctions,
 	IHttpRequestMethods,
 	IWebhookResponseData,
-	NodeConnectionType,
 	NodeOperationError,
 } from 'n8n-workflow';
 
@@ -24,7 +23,7 @@ export class FormalooTrigger implements INodeType {
 			name: 'Formaloo Trigger',
 		},
 		inputs: [],
-		outputs: [NodeConnectionType.Main],
+		outputs: ['main'] as any,
 		credentials: [
 			{
 				name: 'formalooApi',

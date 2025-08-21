@@ -3,7 +3,6 @@ import {
 	INodeTypeDescription,
 	IExecuteFunctions,
 	INodeExecutionData,
-	NodeConnectionType,
 	IHttpRequestMethods,
 	NodeOperationError,
 } from 'n8n-workflow';
@@ -22,8 +21,8 @@ export class Formaloo implements INodeType {
 		defaults: {
 			name: 'Formaloo',
 		},
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
+		inputs: ['main'] as any,
+		outputs: ['main'] as any,
 		credentials: [
 			{
 				name: 'formalooApi',
