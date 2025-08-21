@@ -33,7 +33,7 @@ The nodes require Formaloo API credentials with the following fields:
 1. Install the package:
    ```bash
    npm install n8n-nodes-formaloo
-   ```
+  ```
 
 2. Add the nodes to your n8n instance by copying the `dist` folder to your n8n custom nodes directory.
 

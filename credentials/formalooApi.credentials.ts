@@ -2,6 +2,7 @@ import {
 	IAuthenticateGeneric,
 	ICredentialType,
 	INodeProperties,
+	ICredentialTestRequest,
 } from 'n8n-workflow';
 
 export class formalooApi implements ICredentialType {
@@ -39,6 +40,22 @@ export class formalooApi implements ICredentialType {
 			headers: {
 				'X-Api-Key': '={{$credentials.api_key}}',
 				'Content-Type': 'application/json',
+			},
+		},
+	};
+
+	// The block below tells how this credential can be tested
+	test: ICredentialTestRequest = {
+		request: {
+			baseURL: 'https://api.formaloo.me/',
+			url: 'v3.0/oauth2/authorization-token/',
+			method: 'POST',
+			headers: {
+				'Authorization': '=Basic {{$credentials.secret_api}}',
+				'Content-Type': 'application/json',
+			},
+			body: {
+				grant_type: 'client_credentials',
 			},
 		},
 	};

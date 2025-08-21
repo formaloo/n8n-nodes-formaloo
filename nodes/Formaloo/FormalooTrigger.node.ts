@@ -15,7 +15,7 @@ export class FormalooTrigger implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Formaloo Trigger',
 		name: 'formalooTrigger',
-		icon: 'file:formaloo-picture.png',
+		icon: 'file:formaloo-picture.svg',
 		group: ['trigger'],
 		defaultVersion: 1,
 		version: [1],

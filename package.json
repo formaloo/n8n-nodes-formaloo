@@ -7,7 +7,7 @@
   "main": "nodes/Formaloo/FormalooTrigger.node.js",
   "scripts": {
     "build": "tsc",
-    "postbuild": "cp nodes/Formaloo/formaloo-picture.png dist/nodes/Formaloo/",
+    "postbuild": "cp nodes/Formaloo/formaloo-picture.svg dist/nodes/Formaloo/",
     "lint": "eslint nodes/ credentials/",
     "lintfix": "eslint nodes/ credentials/ --fix"
   },
@@ -23,6 +23,10 @@
   },
   "devDependencies": {
     "@types/node": "^24.2.1",
+    "@typescript-eslint/eslint-plugin": "^8.40.0",
+    "@typescript-eslint/parser": "^8.40.0",
+    "eslint": "^8.57.1",
+    "eslint-plugin-n8n-nodes-base": "^1.16.3",
     "n8n-workflow": "^1.82.0",
     "typescript": "^5.0.0"
   }
