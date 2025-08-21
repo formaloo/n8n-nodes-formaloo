@@ -18,7 +18,7 @@
   ],
   "main": "nodes/Formaloo/FormalooTrigger.node.js",
   "scripts": {
-    "build": "npx rimraf dist && tsc && gulp build:icons",
+    "build": "npx rimraf dist && tsc && gulp copyIcons",
     "dev": "tsc --watch",
     "format": "prettier nodes credentials --write",
     "lint": "eslint nodes credentials package.json",
@@ -42,7 +42,7 @@
     "@typescript-eslint/parser": "^8.40.0",
     "eslint": "^8.57.1",
     "eslint-plugin-n8n-nodes-base": "^1.16.3",
-    "gulp": "^4.0.2",
+    "gulp": "^5.0.1",
     "n8n-workflow": "^1.82.0",
     "prettier": "^3.0.0",
     "rimraf": "^5.0.0",
@@ -50,5 +50,8 @@
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "overrides": {
+    "form-data": "^4.0.4"
   }
 }
