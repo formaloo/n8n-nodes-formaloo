@@ -24,16 +24,35 @@ This package provides n8n nodes for integrating with [Formaloo](https://formaloo
 ## Credentials
 
 The nodes require Formaloo API credentials with the following fields:
-- **Auth Token**: JWT authentication token
-- **API Key**: Your Formaloo API key
-- **Workspace**: Your Formaloo workspace identifier
+- **Secret API**: Your Formaloo secret API key (used for JWT authentication)
+- **API Key**: Your Formaloo API key (used for API requests)
+
+These credentials are used to:
+1. Generate JWT tokens for authentication
+2. Make API requests to Formaloo endpoints
+3. Create and manage webhooks
+
+### Prerequisites
+- A Formaloo account with API access
+- Your Formaloo Secret API key
+- Your Formaloo API key
+
+## Compatibility
+
+- **Minimum n8n version**: 1.0.0
+- **Tested with n8n version**: 1.17.0+
+- **Node.js version**: 18+
 
 ## Installation
+
+Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes/installation/) in the n8n community nodes documentation.
+
+Alternatively, you can install manually:
 
 1. Install the package:
    ```bash
    npm install n8n-nodes-formaloo
-  ```
+   ```
 
 2. Add the nodes to your n8n instance by copying the `dist` folder to your n8n custom nodes directory.
 
@@ -55,6 +74,30 @@ The nodes require Formaloo API credentials with the following fields:
 4. Add form fields with their IDs and values
 5. Optionally add additional fields like submit code, recaptcha value, etc.
 
+For new users, check out the [Try it out](https://docs.n8n.io/try-it-out/) documentation to get started with n8n.
+
+## Field Types
+
+### Unsupported Field Types
+The following field types are currently **not supported** and will be filtered out from the field selection:
+- `matrix` - Matrix fields
+- `table` - Table fields
+- `lookup` - Lookup fields
+- `user` - User fields
+- `profile` - Profile fields
+- `linked_rows` - Linked rows fields
+- `repeating_section` - Repeating section fields
+
+### Multiple Choice Fields
+For **Multiple Select** fields, use comma-separated values to select multiple options:
+
+**Example:**
+```
+Field Value: "Option 1, Option 2, Option 3"
+```
+
+**Note:** Make sure to use the exact option titles as they appear in your Formaloo form.
+
 ## API Endpoints
 
 The nodes use the following Formaloo API endpoints:
@@ -62,12 +105,28 @@ The nodes use the following Formaloo API endpoints:
 - **Webhooks**: `POST/GET/DELETE https://api.formaloo.me/v3.0/forms/{formSlug}/webhooks/`
 - **Form Submit**: `POST https://api.formaloo.me/v3.0/form-displays/slug/{formSlug}/submit/`
 
+## Resources
+
+* [n8n community nodes documentation](https://docs.n8n.io/integrations/#community-nodes)
+* [Formaloo API Documentation](https://docs.formaloo.com/)
+* [Formaloo Website](https://formaloo.com)
+
 ## Development
 
 1. Clone the repository
 2. Install dependencies: `npm install`
 3. Build the project: `npm run build`
 4. Test locally with n8n
+
+## Version History
+
+### 1.0.0
+- Initial release
+- Support for Formaloo Trigger node
+- Support for Formaloo Action node
+- JWT authentication
+- Webhook management
+- Form submission with field type handling
 
 ## License
 
