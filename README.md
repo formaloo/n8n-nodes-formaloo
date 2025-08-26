@@ -17,9 +17,9 @@ This package provides n8n nodes for integrating with [Formaloo](https://formaloo
 ### Formaloo Action
 - **Node Name**: `Formaloo`
 - **Type**: Action
-- **Description**: Submit data to Formaloo forms
+- **Description**: Submit data to Formaloo forms with advanced field type handling
 - **Operations**:
-  - Submit Form: Submit data to a specific Formaloo form
+  - Submit Form: Submit data to a specific Formaloo form with automatic field type conversion
 
 ## Credentials
 
@@ -39,9 +39,9 @@ These credentials are used to:
 
 ## Compatibility
 
-- **Minimum n8n version**: 1.0.0
+- **Minimum n8n version**: 0.1.0
 - **Tested with n8n version**: 1.17.0+
-- **Node.js version**: 18+
+- **Node.js version**: 20+
 
 ## Installation
 
@@ -72,7 +72,7 @@ Alternatively, you can install manually:
 2. Configure your Formaloo API credentials
 3. Select the form you want to submit to
 4. Add form fields with their IDs and values
-5. Optionally add additional fields like submit code, recaptcha value, etc.
+5. The node automatically handles field type conversion for complex fields
 
 For new users, check out the [Try it out](https://docs.n8n.io/try-it-out/) documentation to get started with n8n.
 
@@ -98,12 +98,25 @@ Field Value: "Option 1, Option 2, Option 3"
 
 **Note:** Make sure to use the exact option titles as they appear in your Formaloo form.
 
+### City/Country Fields
+For **City** and **Country** fields, the node automatically searches and maps your input to the correct Formaloo option:
+
+**Example:**
+```
+Field Value: "New York" or "United States"
+```
+
+The node will automatically find the matching city/country and submit the correct slug.
+
 ## API Endpoints
 
 The nodes use the following Formaloo API endpoints:
 - **Forms List**: `GET https://api.formaloo.me/v3.0/forms/`
+- **Form Details**: `GET https://api.formaloo.me/v3.0/forms/{formSlug}/`
 - **Webhooks**: `POST/GET/DELETE https://api.formaloo.me/v3.0/forms/{formSlug}/webhooks/`
 - **Form Submit**: `POST https://api.formaloo.me/v3.0/form-displays/slug/{formSlug}/submit/`
+- **Field Options**: `GET https://api.formaloo.me/v3.0/forms/{formSlug}/fields/{fieldSlug}/choices/`
+- **City/Country Search**: `GET https://api.formaloo.me/v3.0/forms/{formSlug}/fields/{fieldSlug}/choices/`
 
 ## Resources
 
@@ -120,7 +133,7 @@ The nodes use the following Formaloo API endpoints:
 
 ## Version History
 
-### 1.0.0
+### 0.1.0
 - Initial release
 - Support for Formaloo Trigger node
 - Support for Formaloo Action node

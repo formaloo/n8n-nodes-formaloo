@@ -9,7 +9,7 @@ export class formalooApi implements ICredentialType {
 	name = 'formalooApi';
 	displayName = 'Formaloo API';
 
-	documentationUrl = 'httpsDocsFormalooComOperationsFormsWebhooksList';
+	documentationUrl = 'https://docs.formaloo.com/#/';
 
 	properties: INodeProperties[] = [
 		{

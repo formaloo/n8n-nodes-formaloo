@@ -1,7 +1,7 @@
 const path = require('path');
 const { task, src, dest } = require('gulp');
 
-task('copyIcons', copyIcons);
+task('build:icons', copyIcons);
 
 function copyIcons() {
 	const nodeSource = path.resolve('nodes', '**', '*.{png,svg}');
@@ -14,8 +14,3 @@ function copyIcons() {
 
 	return src(credSource).pipe(dest(credDestination));
 }
-
-// Export the task for potential programmatic use
-module.exports = {
-	copyIcons
-};
