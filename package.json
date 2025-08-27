@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-formaloo",
-  "version": "0.1.0",
+  "version": "1.2.0",
   "description": "Formaloo Trigger and Action nodes for n8n",
   "keywords": [
     "n8n",
