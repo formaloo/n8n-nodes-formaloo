@@ -24,7 +24,7 @@
   "main": "index.js",
   "scripts": {
     "build": "npx rimraf dist && tsc && npm run copy-assets",
-    "copy-assets": "find nodes -name '*.svg' -o -name '*.png' | xargs -I {} cp {} dist/nodes/ 2>/dev/null || true && find credentials -name '*.svg' -o -name '*.png' | xargs -I {} cp {} dist/credentials/ 2>/dev/null || true",
+    "copy-assets": "find nodes -name '*.svg' -o -name '*.png' | xargs -I {} cp {} dist/{} 2>/dev/null || true && find credentials -name '*.svg' -o -name '*.png' | xargs -I {} cp {} dist/{} 2>/dev/null || true",
     "dev": "tsc --watch",
     "format": "prettier nodes credentials --write",
     "lint": "eslint nodes credentials package.json",
