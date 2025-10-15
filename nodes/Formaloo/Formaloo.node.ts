@@ -210,13 +210,18 @@ export class Formaloo implements INodeType {
 					// Make the API request
 					const apiUrl = `https://api.formaloo.me/v3.0/form-displays/slug/${formSlug}/submit/`;
 
-					const response = await this.helpers.httpRequestWithAuthentication.call(this, 'formalooApi', 'POST', apiUrl, requestBody, {
+					const options = {
+						method: 'POST' as IHttpRequestMethods,
+						body: requestBody,
 						headers: {
 							'Authorization': `JWT ${jwtToken}`,
 							'X-Api-Key': credentials.api_key,
 							'Content-Type': 'application/json',
 						},
-					});
+						json: true,
+					};
+
+					const response = await this.helpers.request!(apiUrl, options);
 
 					returnData.push({
 						json: {
