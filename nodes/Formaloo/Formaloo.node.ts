@@ -231,7 +231,6 @@ export class Formaloo implements INodeType {
 							formSlug: formSlug,
 							timestamp: new Date().toISOString(),
 						},
-						pairedItem: { item: i },
 					});
 				}
 			} catch (error) {
@@ -242,7 +241,6 @@ export class Formaloo implements INodeType {
 							error: error.message,
 							timestamp: new Date().toISOString(),
 						},
-						pairedItem: { item: i },
 					});
 					continue;
 				}
