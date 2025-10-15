@@ -22,17 +22,16 @@ export async function getForms(this: ILoadOptionsFunctions): Promise<INodeProper
 
 		// Fetch all pages
 		while (nextUrl) {
-			const options = {
-				method: 'GET' as IHttpRequestMethods,
+			const response = await this.helpers.httpRequestWithAuthentication.call(this, 'formalooApi', {
+				method: 'GET',
+				url: nextUrl,
 				headers: {
 					'Authorization': `JWT ${jwtToken}`,
 					'X-Api-Key': credentials.api_key,
 					'Content-Type': 'application/json',
 				},
 				json: true,
-			};
-
-			const response = await this.helpers.request!(nextUrl, options);
+			});
 
 			if (!response.data || !Array.isArray(response.data.forms)) {
 			throw new Error('Invalid response from Formaloo API');
@@ -74,17 +73,16 @@ export async function getFormFields(this: ILoadOptionsFunctions): Promise<INodeP
 
 		const apiUrl = `https://api.formaloo.me/v3.0/forms/${formSlug}/`;
 
-		const options = {
-			method: 'GET' as IHttpRequestMethods,
+		const response = await this.helpers.httpRequestWithAuthentication.call(this, 'formalooApi', {
+			method: 'GET',
+			url: apiUrl,
 			headers: {
 				'Authorization': `JWT ${jwtToken}`,
 				'X-Api-Key': credentials.api_key,
 				'Content-Type': 'application/json',
 			},
 			json: true,
-		};
-
-		const response = await this.helpers.request!(apiUrl, options);
+		});
 
 		if (!response.data || !response.data.form || !Array.isArray(response.data.form.fields_list)) {
 			throw new Error('Invalid response from Formaloo API');
@@ -132,17 +130,16 @@ export async function getFieldOptionsExecute(this: IExecuteFunctions, fieldSlug:
 
 		const apiUrl = `https://api.formaloo.me/v3.0/fields/${fieldSlug}/`;
 
-		const options = {
-			method: 'GET' as IHttpRequestMethods,
+		const response = await this.helpers.httpRequestWithAuthentication.call(this, 'formalooApi', {
+			method: 'GET',
+			url: apiUrl,
 			headers: {
 				'Authorization': `JWT ${jwtToken}`,
 				'X-Api-Key': credentials.api_key,
 				'Content-Type': 'application/json',
 			},
 			json: true,
-		};
-
-		const response = await this.helpers.request!(apiUrl, options);
+		});
 
 		if (!response.data || !response.data.field || !response.data.field.choice_items) {
 			throw new Error('Invalid response from Formaloo API or no options found');
@@ -176,17 +173,16 @@ export async function searchCityCountryChoices(this: IExecuteFunctions, fieldSlu
 
 		const apiUrl = `https://api.formaloo.me/v4/fields/${fieldSlug}/choices/?search=${encodeURIComponent(searchValue)}`;
 
-		const options = {
-			method: 'GET' as IHttpRequestMethods,
+		const response = await this.helpers.httpRequestWithAuthentication.call(this, 'formalooApi', {
+			method: 'GET',
+			url: apiUrl,
 			headers: {
 				'Authorization': `JWT ${jwtToken}`,
 				'X-Api-Key': credentials.api_key,
 				'Content-Type': 'application/json',
 			},
 			json: true,
-		};
-
-		const response = await this.helpers.request!(apiUrl, options);
+		});
 
 		if (!response.data || !response.data.objects || !Array.isArray(response.data.objects)) {
 			throw new Error('Invalid response from Formaloo API');
@@ -251,7 +247,7 @@ export async function getJWTToken(this: ILoadOptionsFunctions, secretApi: string
 		};
 
 
-		const response = await this.helpers.request!(authUrl, options);
+		const response = await this.helpers.request(authUrl, options);
 
 		if (response && response.authorization_token) {
 			return response.authorization_token;
@@ -279,7 +275,7 @@ export async function getJWTTokenExecute(this: IExecuteFunctions, secretApi: str
 			json: true,
 		};
 
-		const response = await this.helpers.request!(authUrl, options);
+		const response = await this.helpers.request(authUrl, options);
 
 		if (response && response.authorization_token) {
 			return response.authorization_token;
@@ -306,7 +302,7 @@ export async function getJWTTokenHook(this: IHookFunctions, secretApi: string): 
 			json: true,
 		};
 
-		const response = await this.helpers.request!(authUrl, options);
+		const response = await this.helpers.request(authUrl, options);
 
 		if (response && response.authorization_token) {
 			return response.authorization_token;

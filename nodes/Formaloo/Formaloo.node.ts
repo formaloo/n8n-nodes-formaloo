@@ -3,7 +3,6 @@ import {
 	INodeTypeDescription,
 	IExecuteFunctions,
 	INodeExecutionData,
-	IHttpRequestMethods,
 	NodeOperationError,
 } from 'n8n-workflow';
 
@@ -210,8 +209,9 @@ export class Formaloo implements INodeType {
 					// Make the API request
 					const apiUrl = `https://api.formaloo.me/v3.0/form-displays/slug/${formSlug}/submit/`;
 
-					const options = {
-						method: 'POST' as IHttpRequestMethods,
+					const response = await this.helpers.httpRequestWithAuthentication.call(this, 'formalooApi', {
+						method: 'POST',
+						url: apiUrl,
 						body: requestBody,
 						headers: {
 							'Authorization': `JWT ${jwtToken}`,
@@ -219,9 +219,7 @@ export class Formaloo implements INodeType {
 							'Content-Type': 'application/json',
 						},
 						json: true,
-					};
-
-					const response = await this.helpers.request!(apiUrl, options);
+					});
 
 					returnData.push({
 						json: {
@@ -231,6 +229,7 @@ export class Formaloo implements INodeType {
 							formSlug: formSlug,
 							timestamp: new Date().toISOString(),
 						},
+						pairedItem: { item: i },
 					});
 				}
 			} catch (error) {
@@ -241,6 +240,7 @@ export class Formaloo implements INodeType {
 							error: error.message,
 							timestamp: new Date().toISOString(),
 						},
+						pairedItem: { item: i },
 					});
 					continue;
 				}
