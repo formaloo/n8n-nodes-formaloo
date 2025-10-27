@@ -6,7 +6,7 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 
-import { getForms, getFormFields, getJWTTokenExecute, getFieldOptionsExecute, searchCityCountryChoices } from './FormalooFunctions';
+import { getForms, getFormFields, getFieldOptionsExecute, searchCityCountryChoices } from './FormalooFunctions';
 
 export class Formaloo implements INodeType {
 	description: INodeTypeDescription = {
@@ -140,9 +140,6 @@ export class Formaloo implements INodeType {
 						throw new NodeOperationError(this.getNode(), 'Form is required. Please select a form from the dropdown.');
 					}
 
-					// Get JWT token using Basic authentication
-					const jwtToken = await getJWTTokenExecute.call(this, credentials.secret_api as string);
-
 					// Build the request body
 					const requestBody: any = {};
 
@@ -213,11 +210,6 @@ export class Formaloo implements INodeType {
 						method: 'POST',
 						url: apiUrl,
 						body: requestBody,
-						headers: {
-							'Authorization': `JWT ${jwtToken}`,
-							'X-Api-Key': credentials.api_key,
-							'Content-Type': 'application/json',
-						},
 						json: true,
 					});
 
