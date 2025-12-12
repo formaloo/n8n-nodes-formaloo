@@ -3,12 +3,11 @@ import {
 	INodeTypeDescription,
 	IWebhookFunctions,
 	IHookFunctions,
-	IHttpRequestMethods,
 	IWebhookResponseData,
 	NodeOperationError,
 } from 'n8n-workflow';
 
-import { getForms, getJWTTokenHook } from './FormalooFunctions';
+import { getForms } from './FormalooFunctions';
 
 export class FormalooTrigger implements INodeType {
 	description: INodeTypeDescription = {
@@ -86,13 +85,12 @@ export class FormalooTrigger implements INodeType {
 		loadOptions: {
 			getForms,
 		},
-	}
+	};
 
 	webhookMethods = {
 		default: {
 			checkExists: async function (this: IHookFunctions): Promise<boolean> {
 				const formSlug = this.getNodeParameter('formSlug') as string;
-				const credentials = await this.getCredentials('formalooApi');
 				const staticData = this.getWorkflowStaticData('node');
 				const webhookSlug = staticData.webhookSlug;
 
@@ -101,21 +99,11 @@ export class FormalooTrigger implements INodeType {
 				}
 
 				try {
-					// Get JWT token using Basic authentication
-					const jwtToken = await getJWTTokenHook.call(this, credentials.secret_api as string);
-
-					const apiUrl = `https://api.formaloo.me/v3.0/forms/${formSlug}/webhooks/${webhookSlug}/`;
-					const options = {
-						method: 'GET' as IHttpRequestMethods,
-						headers: {
-							'Authorization': `JWT ${jwtToken}`,
-							'X-Api-Key': credentials.api_key,
-							'Content-Type': 'application/json',
-						},
+					await this.helpers.httpRequestWithAuthentication.call(this, 'formalooApi', {
+						method: 'GET',
+						url: `https://api.formaloo.me/v3.0/forms/${formSlug}/webhooks/${webhookSlug}/`,
 						json: true,
-					};
-
-					await this.helpers.request!(apiUrl, options);
+					})
 					return true;
 				} catch (error) {
 					return false;
@@ -139,10 +127,6 @@ export class FormalooTrigger implements INodeType {
 				}
 
 				try {
-					// Get JWT token using Basic authentication
-					const jwtToken = await getJWTTokenHook.call(this, credentials.secret_api as string);
-
-					const apiUrl = `https://api.formaloo.me/v3.0/forms/${formSlug}/webhooks/`;
 					const body = {
 						title: `n8n workflow on ${event}`,
 						url: webhookUrl,
@@ -153,18 +137,12 @@ export class FormalooTrigger implements INodeType {
 						send_rendered_data: false,
 					};
 
-					const options = {
-						method: 'POST' as IHttpRequestMethods,
+					const response = await this.helpers.httpRequestWithAuthentication.call(this, 'formalooApi', {
+						method: 'POST',
+						url: `https://api.formaloo.me/v3.0/forms/${formSlug}/webhooks/`,
 						body,
-						headers: {
-							'Authorization': `JWT ${jwtToken}`,
-							'X-Api-Key': credentials.api_key,
-							'Content-Type': 'application/json',
-						},
 						json: true,
-					};
-
-					const response = await this.helpers.request!(apiUrl, options);
+					});
 
 					if (response.status !== 200) {
 						throw new NodeOperationError(this.getNode(), 'Failed to create webhook: No webhook ID returned');
@@ -183,7 +161,6 @@ export class FormalooTrigger implements INodeType {
 
 			delete: async function (this: IHookFunctions): Promise<boolean> {
 				const formSlug = this.getNodeParameter('formSlug') as string;
-				const credentials = await this.getCredentials('formalooApi');
 				const staticData = this.getWorkflowStaticData('node');
 				const webhookSlug = staticData.webhookSlug;
 
@@ -192,21 +169,11 @@ export class FormalooTrigger implements INodeType {
 				}
 
 				try {
-					// Get JWT token using Basic authentication
-					const jwtToken = await getJWTTokenHook.call(this, credentials.secret_api as string);
-
-					const apiUrl = `https://api.formaloo.me/v3.0/forms/${formSlug}/webhooks/${webhookSlug}/`;
-					const options = {
-						method: 'DELETE' as IHttpRequestMethods,
-						headers: {
-							'Authorization': `JWT ${jwtToken}`,
-							'X-Api-Key': credentials.api_key,
-							'Content-Type': 'application/json',
-						},
+					await this.helpers.httpRequestWithAuthentication.call(this, 'formalooApi', {
+						method: 'DELETE',
+						url: `https://api.formaloo.me/v3.0/forms/${formSlug}/webhooks/${webhookSlug}/`,
 						json: true,
-					};
-
-					await this.helpers.request!(apiUrl, options);
+					});
 
 					delete staticData.webhookSlug;
 					delete staticData.formSlug;

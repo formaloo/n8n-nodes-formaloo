@@ -1,11 +1,10 @@
 import {
 	ILoadOptionsFunctions,
 	INodePropertyOptions,
-	IHttpRequestMethods,
 	IExecuteFunctions,
 	IHookFunctions,
+	IHttpRequestMethods,
 } from 'n8n-workflow';
-
 export async function getForms(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 	const credentials = await this.getCredentials('formalooApi');
 
@@ -14,9 +13,6 @@ export async function getForms(this: ILoadOptionsFunctions): Promise<INodeProper
 	}
 
 	try {
-		// Get JWT token using Basic authentication
-		const jwtToken = await getJWTToken.call(this, credentials.secret_api as string);
-
 		let allForms: any[] = [];
 		let nextUrl = 'https://api.formaloo.me/v3.0/forms/';
 
@@ -25,11 +21,6 @@ export async function getForms(this: ILoadOptionsFunctions): Promise<INodeProper
 			const response = await this.helpers.httpRequestWithAuthentication.call(this, 'formalooApi', {
 				method: 'GET',
 				url: nextUrl,
-				headers: {
-					'Authorization': `JWT ${jwtToken}`,
-					'X-Api-Key': credentials.api_key,
-					'Content-Type': 'application/json',
-				},
 				json: true,
 			});
 
@@ -68,19 +59,11 @@ export async function getFormFields(this: ILoadOptionsFunctions): Promise<INodeP
 	}
 
 	try {
-		// Get JWT token using Basic authentication
-		const jwtToken = await getJWTToken.call(this, credentials.secret_api as string);
-
 		const apiUrl = `https://api.formaloo.me/v3.0/forms/${formSlug}/`;
 
 		const response = await this.helpers.httpRequestWithAuthentication.call(this, 'formalooApi', {
 			method: 'GET',
 			url: apiUrl,
-			headers: {
-				'Authorization': `JWT ${jwtToken}`,
-				'X-Api-Key': credentials.api_key,
-				'Content-Type': 'application/json',
-			},
 			json: true,
 		});
 
@@ -125,19 +108,11 @@ export async function getFieldOptionsExecute(this: IExecuteFunctions, fieldSlug:
 	}
 
 	try {
-		// Get JWT token using Basic authentication
-		const jwtToken = await getJWTTokenExecute.call(this, credentials.secret_api as string);
-
 		const apiUrl = `https://api.formaloo.me/v3.0/fields/${fieldSlug}/`;
 
 		const response = await this.helpers.httpRequestWithAuthentication.call(this, 'formalooApi', {
 			method: 'GET',
 			url: apiUrl,
-			headers: {
-				'Authorization': `JWT ${jwtToken}`,
-				'X-Api-Key': credentials.api_key,
-				'Content-Type': 'application/json',
-			},
 			json: true,
 		});
 
@@ -168,19 +143,11 @@ export async function searchCityCountryChoices(this: IExecuteFunctions, fieldSlu
 	}
 
 	try {
-		// Get JWT token using Basic authentication
-		const jwtToken = await getJWTTokenExecute.call(this, credentials.secret_api as string);
-
 		const apiUrl = `https://api.formaloo.me/v4/fields/${fieldSlug}/choices/?search=${encodeURIComponent(searchValue)}`;
 
 		const response = await this.helpers.httpRequestWithAuthentication.call(this, 'formalooApi', {
 			method: 'GET',
 			url: apiUrl,
-			headers: {
-				'Authorization': `JWT ${jwtToken}`,
-				'X-Api-Key': credentials.api_key,
-				'Content-Type': 'application/json',
-			},
 			json: true,
 		});
 
@@ -232,6 +199,11 @@ export async function searchCityCountryChoices(this: IExecuteFunctions, fieldSlu
 	}
 }
 
+/**
+ * @deprecated JWT token fetching is now handled automatically by the credential's authenticate method.
+ * This function is kept for backward compatibility but should not be used in new code.
+ * Use httpRequestWithAuthentication instead, which automatically handles authentication.
+ */
 export async function getJWTToken(this: ILoadOptionsFunctions, secretApi: string): Promise<string> {
 	try {
 		const authUrl = 'https://api.formaloo.me/v3.0/oauth2/authorization-token/';
@@ -246,7 +218,6 @@ export async function getJWTToken(this: ILoadOptionsFunctions, secretApi: string
 			json: true,
 		};
 
-
 		const response = await this.helpers.request(authUrl, options);
 
 		if (response && response.authorization_token) {
@@ -259,6 +230,11 @@ export async function getJWTToken(this: ILoadOptionsFunctions, secretApi: string
 	}
 }
 
+/**
+ * @deprecated JWT token fetching is now handled automatically by the credential's authenticate method.
+ * This function is kept for backward compatibility but should not be used in new code.
+ * Use httpRequestWithAuthentication instead, which automatically handles authentication.
+ */
 export async function getJWTTokenExecute(this: IExecuteFunctions, secretApi: string): Promise<string> {
 	try {
 		const authUrl = 'https://api.formaloo.me/v3.0/oauth2/authorization-token/';
@@ -287,6 +263,11 @@ export async function getJWTTokenExecute(this: IExecuteFunctions, secretApi: str
 	}
 }
 
+/**
+ * @deprecated JWT token fetching is now handled automatically by the credential's authenticate method.
+ * This function is kept for backward compatibility but should not be used in new code.
+ * Use httpRequestWithAuthentication instead, which automatically handles authentication.
+ */
 export async function getJWTTokenHook(this: IHookFunctions, secretApi: string): Promise<string> {
 	try {
 		const authUrl = 'https://api.formaloo.me/v3.0/oauth2/authorization-token/';
@@ -313,3 +294,4 @@ export async function getJWTTokenHook(this: IHookFunctions, secretApi: string): 
 		throw new Error(`Authentication failed: ${error.message}`);
 	}
 }
+
