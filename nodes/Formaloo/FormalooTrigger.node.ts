@@ -5,9 +5,10 @@ import {
 	IHookFunctions,
 	IWebhookResponseData,
 	NodeOperationError,
+	INodeParameterResourceLocator,
 } from 'n8n-workflow';
 
-import { getForms } from './FormalooFunctions';
+import { searchFormsForResourceLocator, getForms } from './FormalooFunctions';
 
 export class FormalooTrigger implements INodeType {
 	description: INodeTypeDescription = {
@@ -41,13 +42,35 @@ export class FormalooTrigger implements INodeType {
 			{
 				displayName: 'Form Name or ID',
 				name: 'formSlug',
-				type: 'options',
-				typeOptions: {
-					loadOptionsMethod: 'getForms',
-				},
-				default: '',
-				description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
+				type: 'resourceLocator',
+				default: { mode: 'list', value: '' },
+				description: 'Search and select a form. You can search by form name or slug.',
 				required: true,
+				modes: [
+					{
+						displayName: 'From List',
+						name: 'list',
+						type: 'list',
+						placeholder: 'Select a form...',
+						typeOptions: {
+							searchListMethod: 'searchFormsForResourceLocator',
+							searchFilterRequired: false,
+							searchable: true,
+						},
+					},
+					{
+						displayName: 'By ID',
+						name: 'id',
+						type: 'string',
+						placeholder: 'Enter Form Slug...',
+					},
+					{
+						displayName: 'By URL',
+						name: 'url',
+						type: 'string',
+						placeholder: 'Enter Form URL...',
+					},
+				],
 			},
 			{
 				displayName: 'Event Type',
@@ -85,12 +108,24 @@ export class FormalooTrigger implements INodeType {
 		loadOptions: {
 			getForms,
 		},
+		listSearch: {
+			searchFormsForResourceLocator,
+		},
 	};
 
 	webhookMethods = {
 		default: {
 			checkExists: async function (this: IHookFunctions): Promise<boolean> {
-				const formSlug = this.getNodeParameter('formSlug') as string;
+				const formSlugParam = this.getNodeParameter('formSlug') as string | INodeParameterResourceLocator;
+
+				// Handle resourceLocator parameter format
+				let formSlug: string;
+				if (typeof formSlugParam === 'object' && formSlugParam !== null && '__rl' in formSlugParam) {
+					formSlug = String(formSlugParam.value || '');
+				} else {
+					formSlug = String(formSlugParam || '');
+				}
+
 				const staticData = this.getWorkflowStaticData('node');
 				const webhookSlug = staticData.webhookSlug;
 
@@ -103,7 +138,7 @@ export class FormalooTrigger implements INodeType {
 						method: 'GET',
 						url: `https://api.formaloo.me/v3.0/forms/${formSlug}/webhooks/${webhookSlug}/`,
 						json: true,
-					})
+					});
 					return true;
 				} catch (error) {
 					return false;
@@ -111,7 +146,15 @@ export class FormalooTrigger implements INodeType {
 			},
 
 			create: async function (this: IHookFunctions): Promise<boolean> {
-				const formSlug = this.getNodeParameter('formSlug') as string;
+				const formSlugParam = this.getNodeParameter('formSlug') as string | INodeParameterResourceLocator;
+
+				// Handle resourceLocator parameter format
+				let formSlug: string;
+				if (typeof formSlugParam === 'object' && formSlugParam !== null && '__rl' in formSlugParam) {
+					formSlug = String(formSlugParam.value || '');
+				} else {
+					formSlug = String(formSlugParam || '');
+				}
 				const event = this.getNodeParameter('event') as string;
 				const credentials = await this.getCredentials('formalooApi');
 				const webhookUrl = this.getNodeWebhookUrl('default');
@@ -160,7 +203,15 @@ export class FormalooTrigger implements INodeType {
 			},
 
 			delete: async function (this: IHookFunctions): Promise<boolean> {
-				const formSlug = this.getNodeParameter('formSlug') as string;
+				const formSlugParam = this.getNodeParameter('formSlug') as string | INodeParameterResourceLocator;
+
+				// Handle resourceLocator parameter format
+				let formSlug: string;
+				if (typeof formSlugParam === 'object' && formSlugParam !== null && '__rl' in formSlugParam) {
+					formSlug = String(formSlugParam.value || '');
+				} else {
+					formSlug = String(formSlugParam || '');
+				}
 				const staticData = this.getWorkflowStaticData('node');
 				const webhookSlug = staticData.webhookSlug;
 

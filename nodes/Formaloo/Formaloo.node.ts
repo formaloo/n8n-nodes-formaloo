@@ -4,9 +4,10 @@ import {
 	IExecuteFunctions,
 	INodeExecutionData,
 	NodeOperationError,
+	INodeParameterResourceLocator,
 } from 'n8n-workflow';
 
-import { getForms, getFormFields, getFieldOptionsExecute, searchCityCountryChoices } from './FormalooFunctions';
+import { searchFormsForResourceLocator, getForms, getFormFields, getFormFieldsForResourceLocator, getFieldOptionsExecute, searchCityCountryChoices } from './FormalooFunctions';
 
 export class Formaloo implements INodeType {
 	description: INodeTypeDescription = {
@@ -48,13 +49,35 @@ export class Formaloo implements INodeType {
 			{
 				displayName: 'Form Name or ID',
 				name: 'formSlug',
-				type: 'options',
-				typeOptions: {
-					loadOptionsMethod: 'getForms',
-				},
-				default: '',
-				description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
+				type: 'resourceLocator',
+				default: { mode: 'list', value: '' },
+				description: 'Search and select a form. You can search by form name or slug.',
 				required: true,
+				modes: [
+					{
+						displayName: 'From List',
+						name: 'list',
+						type: 'list',
+						placeholder: 'Select a form...',
+						typeOptions: {
+							searchListMethod: 'searchFormsForResourceLocator',
+							searchFilterRequired: false,
+							searchable: true,
+						},
+					},
+					{
+						displayName: 'By ID',
+						name: 'id',
+						type: 'string',
+						placeholder: 'Enter Form Slug...',
+					},
+					{
+						displayName: 'By URL',
+						name: 'url',
+						type: 'string',
+						placeholder: 'Enter Form URL...',
+					},
+				],
 				displayOptions: {
 					show: {
 						operation: ['submitForm'],
@@ -86,7 +109,7 @@ export class Formaloo implements INodeType {
 								name: 'fieldId',
 								type: 'options',
 								typeOptions: {
-									loadOptionsMethod: 'getFormFields',
+									loadOptionsMethod: 'getFormFieldsForResourceLocator',
 								},
 								default: '',
 								description: 'The field ID from the form. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
@@ -111,6 +134,10 @@ export class Formaloo implements INodeType {
 		loadOptions: {
 			getForms,
 			getFormFields,
+			getFormFieldsForResourceLocator,
+		},
+		listSearch: {
+			searchFormsForResourceLocator,
 		},
 	};
 
@@ -123,7 +150,18 @@ export class Formaloo implements INodeType {
 				const operation = this.getNodeParameter('operation', i) as string;
 
 				if (operation === 'submitForm') {
-					const formSlug = this.getNodeParameter('formSlug', i) as string;
+					const formSlugParam = this.getNodeParameter('formSlug', i) as string | INodeParameterResourceLocator;
+
+					// Handle resourceLocator parameter format
+					let formSlug: string;
+					if (typeof formSlugParam === 'object' && formSlugParam !== null && '__rl' in formSlugParam) {
+						// ResourceLocator format
+						formSlug = String(formSlugParam.value || '');
+					} else {
+						// Legacy string format (backward compatibility)
+						formSlug = String(formSlugParam || '');
+					}
+
 					const formData = this.getNodeParameter('formData', i) as {
 						fields: Array<{ fieldId: string; value: string }>;
 					};
