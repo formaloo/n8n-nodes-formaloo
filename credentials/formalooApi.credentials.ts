@@ -3,7 +3,9 @@ import {
 	INodeProperties,
 	ICredentialTestRequest,
 	ICredentialDataDecryptedObject,
+	IHttpRequestOptions,
 } from 'n8n-workflow';
+
 
 export class formalooApi implements ICredentialType {
 	name = 'formalooApi';
@@ -36,8 +38,8 @@ export class formalooApi implements ICredentialType {
 
 	async authenticate(
 		credentials: ICredentialDataDecryptedObject,
-		requestOptions: any
-	): Promise<any> {
+		requestOptions: IHttpRequestOptions
+	): Promise<IHttpRequestOptions> {
 		let jwtToken: string;
 
 		if (!credentials.secret_api || !credentials.api_key) {
@@ -47,10 +49,11 @@ export class formalooApi implements ICredentialType {
 		try {
 			// Fetch JWT token using Basic authentication
 			const authUrl = 'https://api.formaloo.me/v3.0/oauth2/authorization-token/';
+			// @ts-ignore - fetch is available in Node.js 20+ runtime
 			const response = await fetch(authUrl, {
 				method: 'POST',
 				headers: {
-					'Authorization': `Basic ${credentials.secret_api}`,
+					'Authorization': `Basic ${String(credentials.secret_api)}`,
 					'Content-Type': 'application/json',
 				},
 				body: JSON.stringify({
@@ -59,7 +62,8 @@ export class formalooApi implements ICredentialType {
 			});
 
 			if (!response.ok) {
-				throw new Error(`Authentication failed: ${response.statusText}`);
+				const errorText = await response.text().catch(() => response.statusText);
+				throw new Error(`Authentication failed: ${response.status} ${response.statusText}${errorText ? ` - ${errorText}` : ''}`);
 			}
 
 			const data = await response.json() as { authorization_token?: string };
@@ -72,14 +76,16 @@ export class formalooApi implements ICredentialType {
 			throw new Error(`Authentication failed: ${error.message}`);
 		}
 
-		// Return authentication headers with JWT token
-		return {
-			headers: {
-				'Authorization': `JWT ${jwtToken}`,
-				'X-Api-Key': credentials.api_key,
-				'Content-Type': 'application/json',
-			},
+		// Merge authentication headers with existing request options
+		// The authenticate method should return modified requestOptions with headers merged
+		requestOptions.headers = {
+			...requestOptions.headers,
+      'Authorization': `JWT ${jwtToken}`,
+			'X-Api-Key': String(credentials.api_key),
+			'Content-Type': 'application/json',
 		};
+
+		return requestOptions;
 	}
 
 	// The block below tells how this credential can be tested

@@ -41,7 +41,7 @@ These credentials are used to:
 
 - **Minimum n8n version**: 0.1.0
 - **Tested with n8n version**: 1.17.0+
-- **Node.js version**: 20+
+- **Node.js version**: 20.15 or higher
 
 ## Installation
 
@@ -115,8 +115,8 @@ The nodes use the following Formaloo API endpoints:
 - **Form Details**: `GET https://api.formaloo.me/v3.0/forms/{formSlug}/`
 - **Webhooks**: `POST/GET/DELETE https://api.formaloo.me/v3.0/forms/{formSlug}/webhooks/`
 - **Form Submit**: `POST https://api.formaloo.me/v3.0/form-displays/slug/{formSlug}/submit/`
-- **Field Options**: `GET https://api.formaloo.me/v3.0/forms/{formSlug}/fields/{fieldSlug}/choices/`
-- **City/Country Search**: `GET https://api.formaloo.me/v3.0/forms/{formSlug}/fields/{fieldSlug}/choices/`
+- **Field Options**: `GET https://api.formaloo.me/v3.0/fields/{fieldSlug}/`
+- **City/Country Search**: `GET https://api.formaloo.me/v4/fields/{fieldSlug}/choices/?search={searchValue}`
 
 ## Resources
 
@@ -126,20 +126,87 @@ The nodes use the following Formaloo API endpoints:
 
 ## Development
 
-1. Clone the repository
-2. Install dependencies: `npm install`
-3. Build the project: `npm run build`
-4. Test locally with n8n
+### Local Development
+
+1. Clone the repository and install dependencies:
+   ```bash
+   git clone https://github.com/formaloo/n8n-nodes-formaloo.git
+   cd n8n-nodes-formaloo
+   npm install
+   ```
+
+2. Build and test locally:
+   ```bash
+   npm run build
+   npm run start
+   ```
+
+   This will build the package and start n8n with your custom node loaded at http://localhost:5678
+
+   **Alternative (manual):**
+   ```bash
+   npm run build
+   N8N_CUSTOM_EXTENSIONS=$(pwd) npx n8n start
+   ```
+
+   **Windows:**
+   ```cmd
+   set N8N_CUSTOM_EXTENSIONS=%CD% & npx n8n start
+   ```
+
+3. After making changes, rebuild and restart n8n:
+   ```bash
+   npm run build
+   ```
+
+### Available Scripts
+
+- `npm run build` - Build TypeScript to JavaScript
+- `npm run dev` - Watch mode (auto-rebuild on changes)
+- `npm run start` - Build and start n8n for testing
+- `npm run lint` - Check code quality
+- `npm run lintfix` - Auto-fix linting issues
+- `npm run format` - Format code with Prettier
+
+## Publishing
+
+### Publishing to npm
+
+1. Update version in `package.json`
+
+2. Build and test:
+   ```bash
+   npm run build
+   npm run lint
+   npm run start  # Test manually
+   ```
+
+3. Publish:
+   ```bash
+   npm publish --access public
+   ```
+
+   The `prepublishOnly` script will automatically build and lint before publishing.
+
+4. Create and push git tag:
+   ```bash
+   git tag -a v1.5.0 -m "Release version 1.5.0"
+   git push origin main
+   git push origin v1.5.0
+   ```
 
 ## Version History
 
-### 0.1.0
-- Initial release
-- Support for Formaloo Trigger node
-- Support for Formaloo Action node
-- JWT authentication
-- Webhook management
-- Form submission with field type handling
+### 1.5.0
+- Current version
+- ResourceLocator with search functionality for form selection
+- Improved form loading performance
+- Enhanced error handling with `pairedItem` support
+- Migrated to `httpRequestWithAuthentication`
+- Backward compatibility with deprecated functions
+
+### Previous Versions
+- See git tags and GitHub releases for detailed version history
 
 ## License
 
