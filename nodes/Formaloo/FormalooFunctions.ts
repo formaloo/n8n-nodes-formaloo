@@ -404,8 +404,10 @@ export async function searchCityCountryChoices(this: IExecuteFunctions, fieldSlu
 export async function getJWTToken(this: ILoadOptionsFunctions, secretApi: string): Promise<string> {
 	try {
 		const authUrl = 'https://api.formaloo.me/v3.0/oauth2/authorization-token/';
-		const options = {
+
+		const response = await this.helpers.httpRequestWithAuthentication.call(this, 'formalooApi', {
 			method: 'POST' as IHttpRequestMethods,
+			url: authUrl,
 			body: {
 				grant_type: 'client_credentials',
 			},
@@ -413,9 +415,7 @@ export async function getJWTToken(this: ILoadOptionsFunctions, secretApi: string
 				'Authorization': `Basic ${secretApi}`,
 			},
 			json: true,
-		};
-
-		const response = await this.helpers.request(authUrl, options);
+		});
 
 		if (response && response.authorization_token) {
 			return response.authorization_token;
@@ -436,8 +436,9 @@ export async function getJWTTokenExecute(this: IExecuteFunctions, secretApi: str
 	try {
 		const authUrl = 'https://api.formaloo.me/v3.0/oauth2/authorization-token/';
 
-		const options = {
+		const response = await this.helpers.httpRequestWithAuthentication.call(this, 'formalooApi', {
 			method: 'POST' as IHttpRequestMethods,
+			url: authUrl,
 			body: {
 				grant_type: 'client_credentials',
 			},
@@ -446,9 +447,7 @@ export async function getJWTTokenExecute(this: IExecuteFunctions, secretApi: str
 				'Content-Type': 'application/json',
 			},
 			json: true,
-		};
-
-		const response = await this.helpers.request(authUrl, options);
+		});
 
 		if (response && response.authorization_token) {
 			return response.authorization_token;
@@ -468,8 +467,10 @@ export async function getJWTTokenExecute(this: IExecuteFunctions, secretApi: str
 export async function getJWTTokenHook(this: IHookFunctions, secretApi: string): Promise<string> {
 	try {
 		const authUrl = 'https://api.formaloo.me/v3.0/oauth2/authorization-token/';
-		const options = {
+
+		const response = await this.helpers.httpRequestWithAuthentication.call(this, 'formalooApi', {
 			method: 'POST' as IHttpRequestMethods,
+			url: authUrl,
 			body: {
 				grant_type: 'client_credentials',
 			},
@@ -478,9 +479,7 @@ export async function getJWTTokenHook(this: IHookFunctions, secretApi: string): 
 				'Content-Type': 'application/json',
 			},
 			json: true,
-		};
-
-		const response = await this.helpers.request(authUrl, options);
+		});
 
 		if (response && response.authorization_token) {
 			return response.authorization_token;
