@@ -92,15 +92,9 @@ export class formalooApi implements ICredentialType {
 	test: ICredentialTestRequest = {
 		request: {
 			baseURL: 'https://api.formaloo.me/',
-			url: 'v3.0/oauth2/authorization-token/',
-			method: 'POST',
-			headers: {
-				'Authorization': '=Basic {{$credentials.secret_api}}',
-				'Content-Type': 'application/json',
-			},
-			body: {
-				grant_type: 'client_credentials',
-			},
+			url: 'v3.0/profile/',
+			method: 'GET',
+			json: true,
 		},
 	};
 }
