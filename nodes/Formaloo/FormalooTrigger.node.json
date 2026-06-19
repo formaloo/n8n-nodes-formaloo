@@ -1,10 +1,11 @@
 {
-  "node": "n8n-nodes-base.Formaloo",
+  "node": "n8n-nodes-base.FormalooTrigger",
   "nodeVersion": "1.0",
   "codexVersion": "1.0",
   "categories": [
     "Productivity",
-    "Forms"
+    "Forms",
+    "Triggers"
   ],
   "resources": {
     "credentialDocumentation": [

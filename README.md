@@ -138,6 +138,7 @@ The nodes use the following Formaloo API endpoints:
 2. Build and test locally:
    ```bash
    npm run build
+   npm run lint:n8n
    npm run start
    ```
 
@@ -165,6 +166,7 @@ The nodes use the following Formaloo API endpoints:
 - `npm run dev` - Watch mode (auto-rebuild on changes)
 - `npm run start` - Build and start n8n for testing
 - `npm run lint` - Check code quality
+- `npm run lint:n8n` - Validate the package with the current n8n node CLI
 - `npm run lintfix` - Auto-fix linting issues
 - `npm run format` - Format code with Prettier
 
@@ -172,28 +174,11 @@ The nodes use the following Formaloo API endpoints:
 
 ### Publishing to npm
 
-1. Update version in `package.json`
+Releases are published only by [`.github/workflows/publish.yml`](.github/workflows/publish.yml). It installs dependencies with `npm ci`, builds, runs the n8n node validation, and publishes with npm provenance.
 
-2. Build and test:
-   ```bash
-   npm run build
-   npm run lint
-   npm run start  # Test manually
-   ```
+Before the first release, configure an npm Trusted Publisher for `n8n-nodes-formaloo` with GitHub Actions owner `formaloo`, repository `n8n-nodes-formaloo`, and workflow filename `publish.yml`. No npm access token is required.
 
-3. Publish:
-   ```bash
-   npm publish --access public
-   ```
-
-   The `prepublishOnly` script will automatically build and lint before publishing.
-
-4. Create and push git tag:
-   ```bash
-   git tag -a v1.5.0 -m "Release version 1.5.0"
-   git push origin main
-   git push origin v1.5.0
-   ```
+To release, update the package version, merge it to `master`, then publish a GitHub Release for the matching tag (for example, `v1.7.1`). The workflow publishes that release to npm.
 
 ## Version History
 
