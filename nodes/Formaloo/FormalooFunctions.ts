@@ -340,7 +340,7 @@ export async function searchCityCountryChoices(this: IExecuteFunctions, fieldSlu
 	}
 
 	try {
-		const apiUrl = `https://api.formaloo.me/v4/fields/${fieldSlug}/choices/?search=${encodeURIComponent(searchValue)}`;
+		const apiUrl = `https://api.formaloo.me/v3.0/fields/${fieldSlug}/choices/?search=${encodeURIComponent(searchValue)}`;
 
 		const response = await this.helpers.httpRequestWithAuthentication.call(this, 'formalooApi', {
 			method: 'GET',
