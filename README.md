@@ -116,7 +116,7 @@ The nodes use the following Formaloo API endpoints:
 - **Webhooks**: `POST/GET/DELETE https://api.formaloo.me/v3.0/forms/{formSlug}/webhooks/`
 - **Form Submit**: `POST https://api.formaloo.me/v3.0/form-displays/slug/{formSlug}/submit/`
 - **Field Options**: `GET https://api.formaloo.me/v3.0/fields/{fieldSlug}/`
-- **City/Country Search**: `GET https://api.formaloo.me/v4/fields/{fieldSlug}/choices/?search={searchValue}`
+- **City/Country Search**: `GET https://api.formaloo.me/v3.0/fields/{fieldSlug}/choices/?search={searchValue}`
 
 ## Resources
 
