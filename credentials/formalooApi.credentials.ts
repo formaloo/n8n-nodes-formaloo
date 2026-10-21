@@ -4,19 +4,26 @@ import {
 	ICredentialTestRequest,
 	ICredentialDataDecryptedObject,
 	IHttpRequestOptions,
+	type Icon,
 } from 'n8n-workflow';
+
+import { readFormalooApiKey } from '../nodes/Formaloo/FormalooFunctions';
 
 
 export class formalooApi implements ICredentialType {
 	name = 'formalooApi';
 	displayName = 'Formaloo API';
+	icon: Icon = {
+		light: 'file:../nodes/Formaloo/formaloo-picture.svg',
+		dark: 'file:../nodes/Formaloo/formaloo-picture.dark.svg',
+	};
 
 	documentationUrl = 'https://docs.formaloo.com';
 
 	properties: INodeProperties[] = [
 		{
 			displayName: 'API Key',
-			name: 'api_key',
+			name: 'apiKey',
 			type: 'string',
 			typeOptions: {
 				password: true,
@@ -42,7 +49,9 @@ export class formalooApi implements ICredentialType {
 	): Promise<IHttpRequestOptions> {
 		let jwtToken: string;
 
-		if (!credentials.secret_api || !credentials.api_key) {
+		const apiKey = readFormalooApiKey(credentials);
+
+		if (!credentials.secret_api || !apiKey) {
 			throw new Error('Missing required credentials. Please check your Formaloo API credentials.');
 		}
 
@@ -81,7 +90,7 @@ export class formalooApi implements ICredentialType {
 		requestOptions.headers = {
 			...requestOptions.headers,
       'Authorization': `JWT ${jwtToken}`,
-			'X-Api-Key': String(credentials.api_key),
+			'X-Api-Key': apiKey,
 			'Content-Type': 'application/json',
 		};
 

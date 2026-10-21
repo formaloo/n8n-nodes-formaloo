@@ -4,25 +4,33 @@ import {
 	IExecuteFunctions,
 	INodeExecutionData,
 	NodeOperationError,
+	NodeApiError,
+	NodeConnectionTypes,
 	INodeParameterResourceLocator,
+	type JsonObject,
 } from 'n8n-workflow';
 
-import { searchFormsForResourceLocator, getForms, getFormFields, getFormFieldsForResourceLocator, getFieldOptionsExecute, searchCityCountryChoices } from './FormalooFunctions';
+import { searchFormsForResourceLocator, getForms, getFormFields, getFormFieldsForResourceLocator, getFieldOptionsExecute, searchCityCountryChoices, readFormalooApiKey } from './FormalooFunctions';
 
 export class Formaloo implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Formaloo',
 		name: 'formaloo',
-		icon: 'file:formaloo-picture.svg',
+		icon: {
+			light: 'file:formaloo-picture.svg',
+			dark: 'file:formaloo-picture.dark.svg',
+		},
 		group: ['transform'],
 		defaultVersion: 1,
     version: [1],
+		subtitle: '={{$parameter["operation"]}}',
 		description: 'Submit data to Formaloo forms',
+		usableAsTool: true,
 		defaults: {
 			name: 'Formaloo',
 		},
-		inputs: ['main'] as any,
-		outputs: ['main'] as any,
+		inputs: [NodeConnectionTypes.Main],
+		outputs: [NodeConnectionTypes.Main],
 		credentials: [
 			{
 				name: 'formalooApi',
@@ -169,7 +177,7 @@ export class Formaloo implements INodeType {
 					const credentials = await this.getCredentials('formalooApi');
 
 					// Validate credentials
-					if (!credentials.secret_api || !credentials.api_key) {
+					if (!credentials.secret_api || !readFormalooApiKey(credentials)) {
 						throw new NodeOperationError(this.getNode(), 'Missing required credentials. Please check your Formaloo API credentials.');
 					}
 
@@ -274,7 +282,7 @@ export class Formaloo implements INodeType {
 					});
 					continue;
 				}
-				throw error;
+				throw new NodeApiError(this.getNode(), error as JsonObject, { itemIndex: i });
 			}
 		}
 

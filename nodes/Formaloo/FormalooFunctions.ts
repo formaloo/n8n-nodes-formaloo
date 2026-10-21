@@ -8,7 +8,19 @@ import {
 	INodeParameterResourceLocator,
 	INodeListSearchResult,
 	INodeListSearchItems,
+	ICredentialDataDecryptedObject,
+	NodeApiError,
+	type JsonObject,
 } from 'n8n-workflow';
+
+/**
+ * Read the Formaloo API key. Credentials saved before v1.7.4 stored this as `api_key`.
+ */
+export function readFormalooApiKey(credentials: ICredentialDataDecryptedObject): string {
+	const value = credentials.apiKey ?? credentials.api_key;
+	return typeof value === 'string' ? value : '';
+}
+
 /**
  * Search forms for resourceLocator - used by searchListMethod
  * This method supports filtering via the filter parameter and returns INodeListSearchResult
@@ -18,7 +30,7 @@ import {
 export async function searchFormsForResourceLocator(this: ILoadOptionsFunctions, filter?: string, paginationToken?: string): Promise<INodeListSearchResult> {
 	const credentials = await this.getCredentials('formalooApi');
 
-	if (!credentials.secret_api || !credentials.api_key) {
+	if (!credentials.secret_api || !readFormalooApiKey(credentials)) {
 		throw new Error('Missing required credentials. Please check your Formaloo API credentials.');
 	}
 
@@ -77,8 +89,8 @@ export async function searchFormsForResourceLocator(this: ILoadOptionsFunctions,
 			results,
 			paginationToken: nextPageToken,
 		};
-	} catch (error: any) {
-		throw new Error(`Failed to load forms: ${error.message}`);
+	} catch (error) {
+		throw new NodeApiError(this.getNode(), error as JsonObject);
 	}
 }
 
@@ -89,7 +101,7 @@ export async function searchFormsForResourceLocator(this: ILoadOptionsFunctions,
 export async function filterListForms(this: ILoadOptionsFunctions, filter?: string): Promise<IResourceLocatorResult[]> {
 	const credentials = await this.getCredentials('formalooApi');
 
-	if (!credentials.secret_api || !credentials.api_key) {
+	if (!credentials.secret_api || !readFormalooApiKey(credentials)) {
 		throw new Error('Missing required credentials. Please check your Formaloo API credentials.');
 	}
 
@@ -132,8 +144,8 @@ export async function filterListForms(this: ILoadOptionsFunctions, filter?: stri
 		}));
 
 		return results;
-	} catch (error: any) {
-		throw new Error(`Failed to search forms: ${error.message}`);
+	} catch (error) {
+		throw new NodeApiError(this.getNode(), error as JsonObject);
 	}
 }
 
@@ -144,7 +156,7 @@ export async function filterListForms(this: ILoadOptionsFunctions, filter?: stri
 export async function getForms(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 	const credentials = await this.getCredentials('formalooApi');
 
-	if (!credentials.secret_api || !credentials.api_key) {
+	if (!credentials.secret_api || !readFormalooApiKey(credentials)) {
 		throw new Error('Missing required credentials. Please check your Formaloo API credentials.');
 	}
 
@@ -171,8 +183,8 @@ export async function getForms(this: ILoadOptionsFunctions): Promise<INodeProper
 			}));
 
 		return forms;
-	} catch (error: any) {
-		throw new Error(`Failed to load forms: ${error.message}`);
+	} catch (error) {
+		throw new NodeApiError(this.getNode(), error as JsonObject);
 	}
 }
 
@@ -185,7 +197,7 @@ export async function getFormFields(this: ILoadOptionsFunctions): Promise<INodeP
 	const credentials = await this.getCredentials('formalooApi');
 	const formSlug = this.getNodeParameter('formSlug') as string;
 
-	if (!credentials.secret_api || !credentials.api_key) {
+	if (!credentials.secret_api || !readFormalooApiKey(credentials)) {
 		throw new Error('Missing required credentials. Please check your Formaloo API credentials.');
 	}
 
@@ -227,7 +239,7 @@ export async function getFormFields(this: ILoadOptionsFunctions): Promise<INodeP
 
 		return fields;
 	} catch (error) {
-		throw new Error(`Failed to load form fields: ${error.message}`);
+		throw new NodeApiError(this.getNode(), error as JsonObject);
 	}
 }
 
@@ -247,7 +259,7 @@ export async function getFormFieldsForResourceLocator(this: ILoadOptionsFunction
 		formSlug = String(formSlugParam || '');
 	}
 
-	if (!credentials.secret_api || !credentials.api_key) {
+	if (!credentials.secret_api || !readFormalooApiKey(credentials)) {
 		throw new Error('Missing required credentials. Please check your Formaloo API credentials.');
 	}
 
@@ -289,14 +301,14 @@ export async function getFormFieldsForResourceLocator(this: ILoadOptionsFunction
 
 		return fields;
 	} catch (error) {
-		throw new Error(`Failed to load form fields: ${error.message}`);
+		throw new NodeApiError(this.getNode(), error as JsonObject);
 	}
 }
 
 export async function getFieldOptionsExecute(this: IExecuteFunctions, fieldSlug: string): Promise<Array<{title: string, slug: string}>> {
 	const credentials = await this.getCredentials('formalooApi');
 
-	if (!credentials.secret_api || !credentials.api_key) {
+	if (!credentials.secret_api || !readFormalooApiKey(credentials)) {
 		throw new Error('Missing required credentials. Please check your Formaloo API credentials.');
 	}
 
@@ -324,14 +336,14 @@ export async function getFieldOptionsExecute(this: IExecuteFunctions, fieldSlug:
 
 		return fieldOptions;
 	} catch (error) {
-		throw new Error(`Failed to load field options: ${error.message}`);
+		throw new NodeApiError(this.getNode(), error as JsonObject);
 	}
 }
 
 export async function searchCityCountryChoices(this: IExecuteFunctions, fieldSlug: string, searchValue: string): Promise<{slug: string, title: string} | null> {
 	const credentials = await this.getCredentials('formalooApi');
 
-	if (!credentials.secret_api || !credentials.api_key) {
+	if (!credentials.secret_api || !readFormalooApiKey(credentials)) {
 		throw new Error('Missing required credentials. Please check your Formaloo API credentials.');
 	}
 
@@ -392,7 +404,7 @@ export async function searchCityCountryChoices(this: IExecuteFunctions, fieldSlu
 
 		return null;
 	} catch (error) {
-		throw new Error(`Failed to search city/country choices: ${error.message}`);
+		throw new NodeApiError(this.getNode(), error as JsonObject);
 	}
 }
 
@@ -423,7 +435,7 @@ export async function getJWTToken(this: ILoadOptionsFunctions, secretApi: string
 			throw new Error('Failed to get JWT token from authentication endpoint');
 		}
 	} catch (error) {
-		throw new Error(`Authentication failed: ${error.message}`);
+		throw new NodeApiError(this.getNode(), error as JsonObject);
 	}
 }
 
@@ -455,7 +467,7 @@ export async function getJWTTokenExecute(this: IExecuteFunctions, secretApi: str
 			throw new Error('Failed to get JWT token from authentication endpoint');
 		}
 	} catch (error) {
-		throw new Error(`Authentication failed: ${error.message}`);
+		throw new NodeApiError(this.getNode(), error as JsonObject);
 	}
 }
 
@@ -487,7 +499,7 @@ export async function getJWTTokenHook(this: IHookFunctions, secretApi: string): 
 			throw new Error('Failed to get JWT token from authentication endpoint');
 		}
 	} catch (error) {
-		throw new Error(`Authentication failed: ${error.message}`);
+		throw new NodeApiError(this.getNode(), error as JsonObject);
 	}
 }
 

@@ -39,9 +39,11 @@ These credentials are used to:
 
 ## Compatibility
 
-- **Minimum n8n version**: 0.1.0
-- **Tested with n8n version**: 1.17.0+
+- **Minimum n8n version**: 1.90.0
+- **Tested with n8n version**: 1.90.0+
 - **Node.js version**: 20.15 or higher
+
+The API key credential field is stored as `apiKey`. Credentials saved by versions before 1.7.4 used `api_key`; those existing values are still read until the credential is saved again. Re-enter the API key if you edit the credential.
 
 ## Installation
 
@@ -182,8 +184,13 @@ To release, update the package version, merge it to `master`, then publish a Git
 
 ## Version History
 
-### 1.5.0
+### 1.7.4
 - Current version
+- Address n8n community node review findings: webhook errors are logged, API failures use `NodeApiError`, and node metadata matches the package name
+- Themed light and dark icons
+- Credential API key field renamed to `apiKey` (existing `api_key` values are still read)
+
+### 1.5.0
 - ResourceLocator with search functionality for form selection
 - Improved form loading performance
 - Enhanced error handling with `pairedItem` support

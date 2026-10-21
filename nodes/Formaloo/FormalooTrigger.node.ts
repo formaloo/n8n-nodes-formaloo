@@ -5,25 +5,30 @@ import {
 	IHookFunctions,
 	IWebhookResponseData,
 	NodeOperationError,
+	NodeConnectionTypes,
 	INodeParameterResourceLocator,
 } from 'n8n-workflow';
 
-import { searchFormsForResourceLocator, getForms } from './FormalooFunctions';
+import { searchFormsForResourceLocator, getForms, readFormalooApiKey } from './FormalooFunctions';
 
 export class FormalooTrigger implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Formaloo Trigger',
 		name: 'formalooTrigger',
-		icon: 'file:formaloo-picture.svg',
+		icon: {
+			light: 'file:formaloo-picture.svg',
+			dark: 'file:formaloo-picture.dark.svg',
+		},
 		group: ['trigger'],
 		defaultVersion: 1,
 		version: [1],
+		subtitle: '={{$parameter["event"]}}',
 		description: 'Trigger workflow on Formaloo form submissions and updates',
 		defaults: {
 			name: 'Formaloo Trigger',
 		},
 		inputs: [],
-		outputs: ['main'] as any,
+		outputs: [NodeConnectionTypes.Main],
 		credentials: [
 			{
 				name: 'formalooApi',
@@ -141,6 +146,8 @@ export class FormalooTrigger implements INodeType {
 					});
 					return true;
 				} catch (error) {
+					const message = error instanceof Error ? error.message : String(error);
+					this.logger.error(`Formaloo webhook checkExists failed: ${message}`);
 					return false;
 				}
 			},
@@ -160,7 +167,7 @@ export class FormalooTrigger implements INodeType {
 				const webhookUrl = this.getNodeWebhookUrl('default');
 
 				// Validate credentials
-				if (!credentials.secret_api || !credentials.api_key) {
+				if (!credentials.secret_api || !readFormalooApiKey(credentials)) {
 					throw new NodeOperationError(this.getNode(), 'Missing required credentials. Please check your Formaloo API credentials.');
 				}
 
@@ -232,7 +239,9 @@ export class FormalooTrigger implements INodeType {
 
 					return true;
 				} catch (error) {
-					// Don't throw error on deletion failure
+					// Keep deactivation working if Formaloo already removed the webhook.
+					const message = error instanceof Error ? error.message : String(error);
+					this.logger.error(`Formaloo webhook delete failed: ${message}`);
 					return true;
 				}
 			},
