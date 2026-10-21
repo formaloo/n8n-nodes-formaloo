@@ -40,8 +40,8 @@ jobs:
       - name: Build package
         run: npm run build
 
-      - name: Validate n8n node
-        run: npx --yes @n8n/node-cli@latest lint
+      - name: Lint with the official n8n node CLI
+        run: npm run lint
 
       - name: Publish package
         run: npm publish --provenance --access public

@@ -140,7 +140,7 @@ The nodes use the following Formaloo API endpoints:
 2. Build and test locally:
    ```bash
    npm run build
-   npm run lint:n8n
+   npm run lint
    npm run start
    ```
 
@@ -167,9 +167,8 @@ The nodes use the following Formaloo API endpoints:
 - `npm run build` - Build TypeScript to JavaScript
 - `npm run dev` - Watch mode (auto-rebuild on changes)
 - `npm run start` - Build and start n8n for testing
-- `npm run lint` - Check code quality
-- `npm run lint:n8n` - Validate the package with the current n8n node CLI
-- `npm run lintfix` - Auto-fix linting issues
+- `npm run lint` - Run the official n8n node linter in strict mode, and fail on warnings
+- `npm run lint:fix` - Auto-fix lint issues with the n8n node linter
 - `npm run format` - Format code with Prettier
 
 ## Publishing
