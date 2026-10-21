@@ -21,6 +21,52 @@ export function readFormalooApiKey(credentials: ICredentialDataDecryptedObject):
 	return typeof value === 'string' ? value : '';
 }
 
+type FormalooForm = {
+	title?: string;
+	slug: string;
+};
+
+type FormalooFormsResponse = {
+	data?: {
+		forms?: FormalooForm[];
+		next?: string | null;
+	};
+};
+
+type FormalooField = {
+	title: string;
+	slug: string;
+	type: string;
+};
+
+type FormalooFormResponse = {
+	data?: {
+		form?: {
+			fields_list?: FormalooField[];
+		};
+	};
+};
+
+type FormalooChoice = {
+	title: string;
+	slug: string;
+};
+
+type FormalooFieldResponse = {
+	data?: {
+		field?: {
+			choice_items?: FormalooChoice[];
+		};
+	};
+};
+
+type FormalooChoicesResponse = {
+	data?: {
+		objects?: FormalooChoice[];
+		count: number;
+	};
+};
+
 /**
  * Search forms for resourceLocator - used by searchListMethod
  * This method supports filtering via the filter parameter and returns INodeListSearchResult
@@ -50,30 +96,30 @@ export async function searchFormsForResourceLocator(this: ILoadOptionsFunctions,
 			url += `&page=${paginationToken}`;
 		}
 
-		const response: any = await this.helpers.httpRequestWithAuthentication.call(this, 'formalooApi', {
+		const response = await this.helpers.httpRequestWithAuthentication.call(this, 'formalooApi', {
 			method: 'GET',
 			url: url,
 			json: true,
-		});
+		}) as FormalooFormsResponse;
 
 		if (!response.data || !Array.isArray(response.data.forms)) {
 			throw new Error('Invalid response from Formaloo API');
 		}
 
-		let forms = response.data.forms.filter((form: any) => form.slug !== '');
+		let forms = response.data.forms.filter((form) => form.slug !== '');
 
 		// Apply additional client-side filtering as fallback/refinement
 		// This helps ensure we catch any matches the server-side search might have missed
 		if (filter && filter.trim()) {
 			const searchLower = filter.trim().toLowerCase();
-			forms = forms.filter((form: any) => {
+			forms = forms.filter((form) => {
 				const title = (form.title || '').toLowerCase();
 				const slug = (form.slug || '').toLowerCase();
 				return title.includes(searchLower) || slug.includes(searchLower);
 			});
 		}
 
-		const results: INodeListSearchItems[] = forms.map((form: any) => ({
+		const results: INodeListSearchItems[] = forms.map((form) => ({
 			name: `${form.title} - ${form.slug}`,
 			value: form.slug,
 			url: `https://api.formaloo.me/v3.0/forms/${form.slug}/`,
@@ -115,29 +161,29 @@ export async function filterListForms(this: ILoadOptionsFunctions, filter?: stri
 			url += `&search=${encodeURIComponent(filter.trim())}`;
 		}
 
-		const response: any = await this.helpers.httpRequestWithAuthentication.call(this, 'formalooApi', {
+		const response = await this.helpers.httpRequestWithAuthentication.call(this, 'formalooApi', {
 			method: 'GET',
 			url: url,
 			json: true,
-		});
+		}) as FormalooFormsResponse;
 
 		if (!response.data || !Array.isArray(response.data.forms)) {
 			throw new Error('Invalid response from Formaloo API');
 		}
 
-		let forms = response.data.forms.filter((form: any) => form.slug !== '');
+		let forms = response.data.forms.filter((form) => form.slug !== '');
 
 		// Apply client-side filtering as fallback if API doesn't support server-side search
 		if (filter && filter.trim()) {
 			const searchLower = filter.trim().toLowerCase();
-			forms = forms.filter((form: any) => {
+			forms = forms.filter((form) => {
 				const title = (form.title || '').toLowerCase();
 				const slug = (form.slug || '').toLowerCase();
 				return title.includes(searchLower) || slug.includes(searchLower);
 			});
 		}
 
-		const results: IResourceLocatorResult[] = forms.map((form: any) => ({
+		const results: IResourceLocatorResult[] = forms.map((form) => ({
 			name: `${form.title} - ${form.slug}`,
 			value: form.slug,
 			url: `https://api.formaloo.me/v3.0/forms/${form.slug}/`,
@@ -165,19 +211,19 @@ export async function getForms(this: ILoadOptionsFunctions): Promise<INodeProper
 		const separator = apiUrl.includes('?') ? '&' : '?';
 		const url = `${apiUrl}${separator}page_size=100`;
 
-		const response: any = await this.helpers.httpRequestWithAuthentication.call(this, 'formalooApi', {
+		const response = await this.helpers.httpRequestWithAuthentication.call(this, 'formalooApi', {
 			method: 'GET',
 			url: url,
 			json: true,
-		});
+		}) as FormalooFormsResponse;
 
 		if (!response.data || !Array.isArray(response.data.forms)) {
 			throw new Error('Invalid response from Formaloo API');
 		}
 
 		const forms = response.data.forms
-			.filter((form: any) => form.slug !== '')
-			.map((form: any) => ({
+			.filter((form) => form.slug !== '')
+			.map((form) => ({
 				name: `${form.title} - ${form.slug}`,
 				value: form.slug,
 			}));
@@ -212,14 +258,14 @@ export async function getFormFields(this: ILoadOptionsFunctions): Promise<INodeP
 			method: 'GET',
 			url: apiUrl,
 			json: true,
-		});
+		}) as FormalooFormResponse;
 
 		if (!response.data || !response.data.form || !Array.isArray(response.data.form.fields_list)) {
 			throw new Error('Invalid response from Formaloo API');
 		}
 
 		const fields = response.data.form.fields_list
-			.filter((field: any) =>
+			.filter((field) =>
 				!['success_page',
 					'matrix',
 					'table',
@@ -232,7 +278,7 @@ export async function getFormFields(this: ILoadOptionsFunctions): Promise<INodeP
 				field.title &&
 				field.slug
 			)
-			.map((field: any) => ({
+			.map((field) => ({
 				name: `${field.title} - ${field.type}`,
 				value: `${field.slug} - ${field.type}`,
 			}));
@@ -274,14 +320,14 @@ export async function getFormFieldsForResourceLocator(this: ILoadOptionsFunction
 			method: 'GET',
 			url: apiUrl,
 			json: true,
-		});
+		}) as FormalooFormResponse;
 
 		if (!response.data || !response.data.form || !Array.isArray(response.data.form.fields_list)) {
 			throw new Error('Invalid response from Formaloo API');
 		}
 
 		const fields = response.data.form.fields_list
-			.filter((field: any) =>
+			.filter((field) =>
 				!['success_page',
 					'matrix',
 					'table',
@@ -294,7 +340,7 @@ export async function getFormFieldsForResourceLocator(this: ILoadOptionsFunction
 				field.title &&
 				field.slug
 			)
-			.map((field: any) => ({
+			.map((field) => ({
 				name: `${field.title} - ${field.type}`,
 				value: `${field.slug} - ${field.type}`,
 			}));
@@ -323,13 +369,13 @@ export async function getFieldOptionsExecute(this: IExecuteFunctions, fieldSlug:
 			method: 'GET',
 			url: apiUrl,
 			json: true,
-		});
+		}) as FormalooFieldResponse;
 
 		if (!response.data || !response.data.field || !response.data.field.choice_items) {
 			throw new Error('Invalid response from Formaloo API or no options found');
 		}
 
-		const fieldOptions = response.data.field.choice_items.map((option: any) => ({
+		const fieldOptions = response.data.field.choice_items.map((option) => ({
 			title: option.title,
 			slug: option.slug,
 		}));
@@ -358,7 +404,7 @@ export async function searchCityCountryChoices(this: IExecuteFunctions, fieldSlu
 			method: 'GET',
 			url: apiUrl,
 			json: true,
-		});
+		}) as FormalooChoicesResponse;
 
 		if (!response.data || !response.data.objects || !Array.isArray(response.data.objects)) {
 			throw new Error('Invalid response from Formaloo API');
@@ -374,7 +420,7 @@ export async function searchCityCountryChoices(this: IExecuteFunctions, fieldSlu
 
 		// Case 2: More than one result - check for exact match
 		if (count > 1) {
-			const exactMatches = results.filter((item: any) =>
+			const exactMatches = results.filter((item) =>
 				item.title.toLowerCase() === searchValue.toLowerCase()
 			);
 
@@ -386,10 +432,10 @@ export async function searchCityCountryChoices(this: IExecuteFunctions, fieldSlu
 				};
 			} else if (exactMatches.length > 1) {
 				// Multiple exact matches (shouldn't happen but handle it)
-				throw new Error(`Multiple exact matches found for "${searchValue}": ${exactMatches.map((m: any) => m.title).join(', ')}`);
+				throw new Error(`Multiple exact matches found for "${searchValue}": ${exactMatches.map((m) => m.title).join(', ')}`);
 			} else {
 				// No exact match, show available options
-				const suggestions = results.slice(0, 10).map((item: any) => item.title).join(', ');
+				const suggestions = results.slice(0, 10).map((item) => item.title).join(', ');
 				throw new Error(`No exact match found for "${searchValue}". Available options include: ${suggestions}${count > 10 ? '...' : ''}`);
 			}
 		}

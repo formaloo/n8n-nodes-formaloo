@@ -260,7 +260,7 @@ export class FormalooTrigger implements INodeType {
 			if (typeof body === 'string') {
 				try {
 					processedData = JSON.parse(body);
-				} catch (e) {
+				} catch {
 					// Keep as string if not valid JSON
 				}
 			}

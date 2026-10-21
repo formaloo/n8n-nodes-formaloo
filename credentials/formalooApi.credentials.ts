@@ -58,7 +58,6 @@ export class formalooApi implements ICredentialType {
 		try {
 			// Fetch JWT token using Basic authentication
 			const authUrl = 'https://api.formaloo.me/v3.0/oauth2/authorization-token/';
-			// @ts-ignore - fetch is available in Node.js 20+ runtime
 			const response = await fetch(authUrl, {
 				method: 'POST',
 				headers: {
@@ -81,8 +80,9 @@ export class formalooApi implements ICredentialType {
 			if (!jwtToken) {
 				throw new Error('Failed to get JWT token from authentication endpoint');
 			}
-		} catch (error: any) {
-			throw new Error(`Authentication failed: ${error.message}`);
+		} catch (error) {
+			const message = error instanceof Error ? error.message : String(error);
+			throw new Error(`Authentication failed: ${message}`);
 		}
 
 		// Merge authentication headers with existing request options

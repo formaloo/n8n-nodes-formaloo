@@ -187,7 +187,7 @@ export class Formaloo implements INodeType {
 					}
 
 					// Build the request body
-					const requestBody: any = {};
+					const requestBody: Record<string, string | string[]> = {};
 
 					const validFieldTypes = ['dropdown', 'choice', 'multiple_select', 'city', 'country'] as const;
 
@@ -200,12 +200,12 @@ export class Formaloo implements INodeType {
 							const fieldId = parts[0];
 							const fieldType = parts[1].trim();
 
-							if (fieldType && validFieldTypes.includes(fieldType as any)) {
+							if (fieldType && (validFieldTypes as readonly string[]).includes(fieldType)) {
 								if (fieldType == 'dropdown' || fieldType == 'choice') {
 
 									const fieldOptions = await getFieldOptionsExecute.call(this, fieldId);
 
-									const fieldDetails = fieldOptions.find((option: any) => option.title.toLowerCase() === field.value.toLowerCase());
+									const fieldDetails = fieldOptions.find((option) => option.title.toLowerCase() === field.value.toLowerCase());
 									if (fieldDetails && fieldDetails.slug) {
 										requestBody[fieldId] = fieldDetails.slug;
 									} else {
@@ -218,7 +218,7 @@ export class Formaloo implements INodeType {
 									const fieldDetailsList = [];
 
 									for (const value of values) {
-										const fieldDetails = fieldOptions.find((option: any) => option.title.toLowerCase() === value.trim().toLowerCase());
+										const fieldDetails = fieldOptions.find((option) => option.title.toLowerCase() === value.trim().toLowerCase());
 										if (fieldDetails && fieldDetails.slug) {
 											// Store fieldDetails.slug in a list
 											fieldDetailsList.push(fieldDetails.slug);
